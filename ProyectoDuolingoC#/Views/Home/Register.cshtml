@@ -1,0 +1,164 @@
+﻿@model ProyectoDuolingoC_.Models.Usuario
+
+@{
+    ViewData["Title"] = "Crear Cuenta";
+}
+
+<style>
+    .register-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .register-card {
+        background: white;
+        border-radius: 30px;
+        border: none;
+        padding: 2.5rem;
+        box-shadow: 0 20px 40px rgba(26, 67, 50, 0.08);
+        width: 100%;
+        max-width: 550px;
+    }
+
+    .register-header h2 {
+        font-weight: 800;
+        color: var(--primary-dark);
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .register-header p {
+        text-align: center;
+        color: #777;
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: var(--primary-dark);
+        font-size: 0.85rem;
+        margin-left: 5px;
+        margin-bottom: 0.4rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 15px;
+        padding: 0.7rem 1.2rem;
+        border: 2px solid #f0f0f0;
+        background-color: #fcfcfc;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-dark);
+            background-color: white;
+            box-shadow: none;
+        }
+
+        /* Estilo especial para el input de archivo */
+        .form-control[type="file"] {
+            padding: 0.6rem;
+        }
+
+    .btn-register-submit {
+        background-color: var(--primary-dark);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        padding: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        margin-top: 1.5rem;
+    }
+
+        .btn-register-submit:hover {
+            background-color: #2d6a4f;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(26, 67, 50, 0.2);
+            color: white;
+        }
+
+    .login-link {
+        color: var(--primary-dark);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+
+        <div class="register-header">
+            <h2>Únete a Languo</h2>
+            <p>Empieza tu viaje hoy mismo, es gratis.</p>
+        </div>
+
+        @* IMPORTANTE: enctype para permitir subida de archivos *@
+        <form asp-action="Register" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="NombreUsuario" class="form-label">Nombre de Usuario</label>
+                    <input asp-for="NombreUsuario" class="form-control" placeholder="Ej: JuanPerez" />
+                    <span asp-validation-for="NombreUsuario" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CorreoElectronico" class="form-label">Email</label>
+                    <input asp-for="CorreoElectronico" class="form-control" placeholder="correo@ejemplo.com" />
+                    <span asp-validation-for="CorreoElectronico" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Rol" class="form-label">Tu Perfil</label>
+                    <select asp-for="Rol" class="form-select">
+                        <option value="1">Estudiante</option>
+                        <option value="2">Administrador</option>
+                    </select>
+                    <span asp-validation-for="Rol" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input name="pass" type="password" class="form-control" placeholder="••••••••" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Foto de Perfil</label>
+                @* El nombre del input debe ser el que esperes en el Controller (ej: IFormFile imagenArchivo) *@
+                <input type="file" name="imagenArchivo" class="form-control" accept="image/*" />
+                <span class="text-muted small ms-1">Opcional: Sube un archivo JPG o PNG</span>
+            </div>
+
+            <button type="submit" class="btn btn-register-submit w-100">
+                Crear mi cuenta
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <span class="text-muted">¿Ya tienes cuenta?</span><br>
+            <a asp-action="LogIn" class="login-link">Inicia sesión aquí</a>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
