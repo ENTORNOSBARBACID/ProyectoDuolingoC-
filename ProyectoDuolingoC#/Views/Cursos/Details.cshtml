@@ -155,20 +155,42 @@
                 </p>
 
                 <h4 class="fw-bold mb-4">Plan de Estudios</h4>
-                @if (lecciones != null )
+                @if(ViewData["CURSO"] is false)
                 {
-                    int idx = 1;
-                    foreach (var leccion in lecciones)
+                    @if (lecciones != null )
                     {
-                        <a class="lesson-strip animate__animated animate__fadeInLeft" 
-                           style="animation-delay: @(0.4 + (idx * 0.1))s">
-                            <div class="lesson-idx">@idx</div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
-                                <small class="text-muted">Módulo de aprendizaje • 20 min</small>
-                            </div>
-                        </a>
-                        idx++;
+                        int idx = 1;
+                        foreach (var leccion in lecciones)
+                        {
+                            <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID" class="lesson-strip animate__animated animate__fadeInLeft" 
+                               style="animation-delay: @(0.4 + (idx * 0.1))s">
+                                <div class="lesson-idx">@idx</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
+                                    <small class="text-muted">Módulo de aprendizaje • 20-40 min</small>
+                                </div>
+                            </a>
+                            idx++;
+                        }
+                    }
+                }
+                else
+                {
+                    @if (lecciones != null)
+                    {
+                        int idx = 1;
+                        foreach (var leccion in lecciones)
+                        {
+                            <a class="lesson-strip animate__animated animate__fadeInLeft"
+                               style="animation-delay: @(0.4 + (idx * 0.1))s">
+                                <div class="lesson-idx">@idx</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
+                                    <small class="text-muted">Módulo de aprendizaje • 20-40 min</small>
+                                </div>
+                            </a>
+                            idx++;
+                        }
                     }
                 }
             </div>

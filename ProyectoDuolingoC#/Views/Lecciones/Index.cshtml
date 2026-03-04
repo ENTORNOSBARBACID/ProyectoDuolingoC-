@@ -1,0 +1,95 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Contenido de la Lección";
+}
+
+<style>
+    body {
+        background-color: #f0f2f5;
+        color: #333;
+    }
+
+    .page-wrapper {
+        display: flex;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .lesson-sheet {
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 800px;
+        padding: 60px;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        min-height: 80vh;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+        /* Añadimos flex al contenedor para ayudar a organizar los elementos */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .content-text {
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+        flex-grow: 1; /* Esto empuja el botón hacia abajo si hay poco texto */
+    }
+
+    code {
+        background-color: #f8f9fa;
+        color: #d63384;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: 'Cascadia Code', Consolas, monospace;
+    }
+
+    /* CONTENEDOR PARA CENTRAR EL BOTÓN */
+    .button-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin-top: 40px;
+    }
+
+    /* BOTÓN CON EL COLOR DE TU IMAGEN */
+    .btn-continue {
+        display: inline-block;
+        padding: 15px 50px;
+        background-color: #1d4432; /* El verde oscuro de tu imagen */
+        color: white;
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 12px;
+        /* Sombra inferior más oscura para el efecto 3D */
+        border-bottom: 5px solid #11291e;
+        transition: all 0.2s;
+    }
+
+        .btn-continue:hover {
+            background-color: #255740;
+            color: white;
+            transform: translateY(2px);
+            border-bottom-width: 3px;
+        }
+
+        .btn-continue:active {
+            transform: translateY(5px);
+            border-bottom-width: 0px;
+        }
+</style>
+
+<div class="page-wrapper">
+    <div class="lesson-sheet">
+        <div class="content-text">
+            @Html.Raw(Model)
+        </div>
+
+        <div class="button-container">
+            <a href="#" class="btn-continue">¡ENTENDIDO!</a>
+        </div>
+    </div>
+</div>

@@ -24,6 +24,8 @@ namespace ProyectoDuolingoC_.Models
 
         [ForeignKey("CursoID")]
         public virtual Curso Curso { get; set; } = null!;
+        [Column("ContenidoTeorico")]
+        public string? ContenidoTeorico { get; set; }
 
         public virtual ICollection<Pregunta> Preguntas { get; set; } = new List<Pregunta>();
         public virtual ICollection<ProgresoUsuario> ProgresoUsuarios { get; set; } = new List<ProgresoUsuario>();

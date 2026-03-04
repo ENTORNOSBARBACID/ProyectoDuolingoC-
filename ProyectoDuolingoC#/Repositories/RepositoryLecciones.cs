@@ -18,5 +18,22 @@ namespace ProyectoDuolingoC_.Repositories
                            select datos;
             return await consulta.ToListAsync();
         }
+        public async Task<ProgresoUsuario> VerProgresoUsuario(int idUsu, int idLec)
+        {
+            var consulta = from datos in this.context.ProgresoUsuario
+                           where datos.UsuarioID == idUsu && datos.LeccionID == idLec
+                           select datos;
+            return await consulta.FirstOrDefaultAsync();
+        }
+        public async Task<string> VerContenido(int idLeccion)
+        {
+            var leccion = await context.Leccion
+                .Where(l => l.LeccionID == idLeccion)
+                .Select(l => l.ContenidoTeorico)
+                .FirstOrDefaultAsync();
+
+            // Si no existe la lección o el contenido es nulo, devolvemos un mensaje amigable
+            return leccion ?? "No hay contenido disponible para esta lección todavía.";
+        }
     }
 }
