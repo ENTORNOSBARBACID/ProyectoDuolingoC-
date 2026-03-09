@@ -1,0 +1,265 @@
+﻿@model ProyectoDuolingoC_.Models.Pregunta
+
+@{
+    ViewData["Title"] = "Reto en curso";
+    // Obtenemos el porcentaje de progreso que enviamos desde el controlador
+    int progreso = ViewData["PROGRESO_PORCENTAJE"] != null ? (int)ViewData["PROGRESO_PORCENTAJE"] : 0;
+
+    // Recuperamos la lista de opciones de la base de datos
+    var opciones = ViewData["OPCIONES"] as List<ProyectoDuolingoC_.Models.OpcionRespuesta>;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+<style>
+    :root {
+        --f-dark: #0d2219;
+        --f-accent: #1a4332;
+        --f-accent-hover: #0d2219;
+        --f-bg: #fdfdfd;
+        --border-color: #e5e5e5;
+        --f-selected-bg: #eef3f0;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    /* --- CABECERA Y PROGRESO --- */
+    .header-reto {
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .btn-close-reto {
+        color: #afafaf;
+        font-size: 2rem;
+        transition: 0.2s;
+    }
+
+        .btn-close-reto:hover {
+            color: #ff4b4b;
+        }
+
+    .progress-container {
+        flex-grow: 1;
+        background-color: #e5e5e5;
+        border-radius: 20px;
+        height: 16px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        background-color: var(--f-accent);
+        height: 100%;
+        border-radius: 20px;
+        transition: width 0.5s ease-in-out;
+    }
+
+    /* --- CONTENIDO DE LA PREGUNTA --- */
+    .main-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 0 2rem;
+    }
+
+    .pregunta-titulo {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #3c3c3c;
+        margin-bottom: 2rem;
+        width: 100%;
+        text-align: left;
+    }
+
+    .area-respuesta {
+        width: 100%;
+        margin-bottom: 3rem;
+    }
+
+    /* --- DISEÑO DE BOTONES TIPO TEST --- */
+    .opcion-card {
+        display: block;
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #4b4b4b;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .opcion-card:hover {
+            background: #f7f7f7;
+        }
+
+        .opcion-card input[type="radio"] {
+            display: none;
+        }
+
+            .opcion-card input[type="radio"]:checked + .opcion-texto {
+                color: var(--f-accent);
+            }
+
+        .opcion-card:has(input[type="radio"]:checked) {
+            border-color: var(--f-accent);
+            background: var(--f-selected-bg);
+        }
+
+    /* --- EDITOR DE CÓDIGO --- */
+    .editor-wrapper {
+        border-radius: 15px;
+        overflow: hidden;
+        border: 2px solid var(--border-color);
+        text-align: left;
+    }
+
+    /* --- PIE DE PÁGINA Y BOTÓN COMPROBAR --- */
+    .footer-reto {
+        border-top: 2px solid var(--border-color);
+        padding: 2rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        background: white;
+        margin-top: auto;
+    }
+
+    .btn-comprobar {
+        background: var(--f-accent);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 1rem 4rem;
+        font-weight: 800;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        box-shadow: 0 5px 0 var(--f-accent-hover);
+        transition: 0.2s;
+        width: 100%;
+        max-width: 800px;
+    }
+
+        .btn-comprobar:hover {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 var(--f-accent-hover);
+        }
+
+        .btn-comprobar:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 transparent;
+        }
+</style>
+
+<div class="header-reto">
+    <a asp-controller="Lecciones" asp-action="Index" asp-route-id="@Model.LeccionID" class="btn-close-reto">
+        <i class="bi bi-x-lg"></i>
+    </a>
+    <div class="progress-container">
+        <div class="progress-bar-fill" style="width: @progreso%;"></div>
+    </div>
+</div>
+
+<form asp-action="VerificarRespuesta" method="post" id="form-reto" class="main-content d-flex flex-column w-100">
+    <input type="hidden" name="PreguntaID" value="@Model.PreguntaID" />
+    <input type="hidden" name="IndexActual" value="@ViewData["INDEX_ACTUAL"]" />
+    <input type="hidden" name="LeccionID" value="@Model.LeccionID" /> <h2 class="pregunta-titulo">@Model.TextoPregunta</h2>
+
+    <div class="area-respuesta">
+
+        @switch (Model.TipoPregunta)
+        {
+            case "VerdaderoFalso":
+            case "OpcionMultiple":
+                @if (opciones != null && opciones.Any())
+                {
+                    foreach (var opcion in opciones)
+                    {
+                        <label class="opcion-card animate__animated animate__fadeInUp">
+                            <input type="radio" name="RespuestaAlumno" value="@opcion.OpcionID" required>
+                            <span class="opcion-texto">@opcion.TextoOpcion</span>
+                        </label>
+                    }
+                }
+                else
+                {
+                    <div class="alert alert-secondary fw-bold text-center">
+                        <i class="bi bi-info-circle me-2"></i> No hay opciones configuradas.
+                    </div>
+                }
+                break;
+
+            case "CompletarCodigo":
+                <div class="editor-wrapper animate__animated animate__fadeInUp">
+                    <textarea id="editor-codigo" name="RespuestaAlumno"></textarea>
+                </div>
+                break;
+
+            default:
+                <div class="alert alert-danger fw-bold">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Error: Tipo de pregunta no reconocido.
+                </div>
+                break;
+        }
+
+    </div>
+
+    <div class="footer-reto mt-auto">
+        <button type="submit" class="btn-comprobar" onclick="prepararEnvio()">
+            Comprobar
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+
+    <script>
+        var editor = null;
+
+        // Solo inicializamos el editor si existe en la página (si es una pregunta de código)
+        if (document.getElementById("editor-codigo")) {
+            editor = CodeMirror.fromTextArea(document.getElementById("editor-codigo"), {
+                lineNumbers: true,
+                mode: "text/x-csharp",
+                theme: "dracula",
+                indentUnit: 4,
+                matchBrackets: true
+            });
+            editor.setSize("100%", "250px");
+        }
+
+        // Antes de enviar el formulario, volcamos el texto de CodeMirror al textarea
+        function prepararEnvio() {
+            if (editor) {
+                editor.save();
+            }
+        }
+    </script>
+}

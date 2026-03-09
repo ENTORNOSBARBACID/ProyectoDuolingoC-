@@ -18,22 +18,46 @@ namespace ProyectoDuolingoC_.Repositories
                            select datos;
             return await consulta.ToListAsync();
         }
-        public async Task<ProgresoUsuario> VerProgresoUsuario(int idUsu, int idLec)
+        public async Task<ProgresoUsuario> VerProgresoUsuarioAsync(int idUsu, int idLec)
         {
             var consulta = from datos in this.context.ProgresoUsuario
                            where datos.UsuarioID == idUsu && datos.LeccionID == idLec
                            select datos;
             return await consulta.FirstOrDefaultAsync();
         }
-        public async Task<string> VerContenido(int idLeccion)
+        public async Task<List<ProgresoUsuario>> VerProgresoUsuarioListAsync(int idUsu)
+        {
+            var consulta = from datos in this.context.ProgresoUsuario
+                           where datos.UsuarioID == idUsu
+                           select datos;
+            return await consulta.ToListAsync();
+        }
+        public async Task<Leccion> VerContenido(int idLeccion)
         {
             var leccion = await context.Leccion
                 .Where(l => l.LeccionID == idLeccion)
-                .Select(l => l.ContenidoTeorico)
                 .FirstOrDefaultAsync();
 
-            // Si no existe la lección o el contenido es nulo, devolvemos un mensaje amigable
-            return leccion ?? "No hay contenido disponible para esta lección todavía.";
+            return leccion;
+        }
+        public async Task<int> GetOrderAsync(int cursoId)
+        {
+            var consulta = await context.Leccion
+                .Where(l => l.CursoID == cursoId)
+                .OrderByDescending(l => l.Orden)
+                .FirstOrDefaultAsync();
+            if (consulta == null)
+            {
+                return 1;
+            }
+            return consulta.Orden + 1;
+        }
+        public async Task CreateLeccionAsync(Leccion lec)
+        {
+            lec.Orden = await GetOrderAsync(lec.CursoID);
+            await this.context.Leccion.AddAsync(lec);
+
+            await this.context.SaveChangesAsync();
         }
     }
 }

@@ -1,0 +1,219 @@
+﻿@model ProyectoDuolingoC_.Models.Leccion
+
+@{
+    ViewData["Title"] = "Añadir Lección";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --f-dark: #1a4332;
+        --f-accent: #58cc02; /* Verde tipo Duolingo */
+        --f-bg: #fdfdfd;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    /* --- CABECERA --- */
+    .page-header {
+        background: var(--f-dark);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0 0 40px 40px;
+        margin-top: -2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(26, 67, 50, 0.15);
+    }
+
+    .btn-return {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        transition: 0.3s;
+        position: absolute;
+        left: 20px;
+        top: 20px;
+    }
+
+        .btn-return:hover {
+            color: white;
+            transform: translateX(-5px);
+        }
+
+    /* --- FORMULARIO CENTRADO --- */
+    .form-card {
+        background: white;
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        margin-bottom: 4rem;
+        text-align: center; /* Centramos el texto del formulario */
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centramos los inputs */
+    }
+
+    .control-label {
+        font-weight: 600;
+        color: var(--f-dark);
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+    }
+
+    .custom-input {
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        padding: 0.8rem 1.2rem;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: 0.3s;
+        background-color: #f8f9fa;
+        width: 100%;
+        max-width: 500px; /* Limitamos el ancho para que no se vea desproporcionado al estar centrado */
+        text-align: center; /* Centramos el texto que el usuario escribe */
+    }
+
+        .custom-input:focus {
+            border-color: var(--f-accent);
+            box-shadow: 0 0 0 0.25rem rgba(88, 204, 2, 0.25);
+            background-color: white;
+            outline: none;
+        }
+
+        .custom-input[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+    /* --- EDITOR TINYMCE --- */
+    .editor-container {
+        width: 100%;
+        max-width: 800px; /* Un poco más ancho para el editor de texto */
+        margin: 0 auto;
+        text-align: left; /* El contenido del editor sí debe alinearse a la izquierda por defecto */
+    }
+
+    /* --- BOTÓN GUARDAR --- */
+    .btn-submit {
+        background: var(--f-accent);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 1rem 2.5rem;
+        font-weight: 800;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 10px 20px rgba(88, 204, 2, 0.3);
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-top: 1rem;
+    }
+
+        .btn-submit:hover {
+            transform: scale(1.05) translateY(-3px);
+            filter: brightness(1.05);
+            color: white;
+        }
+</style>
+
+<div class="page-header position-relative animate__animated animate__fadeInDown">
+    <div class="container">
+        <a asp-controller="Cursos" asp-action="Details" asp-route-id="@ViewData["CURSOID"]" class="btn-return">
+            <i class="bi bi-arrow-left-short fs-4"></i> Volver al Curso
+        </a>
+        <h1 class="display-5 fw-bold mb-0">Crear Nueva Lección</h1>
+        <p class="lead opacity-75 mt-2 mb-0">Diseña el contenido para tus alumnos</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="form-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="CursoID" class="control-label">ID del Curso (Automático)</label>
+                                <input asp-for="CursoID" class="form-control custom-input" value="@ViewData["CURSOID"]" readonly />
+                                <span asp-validation-for="CursoID" class="text-danger small fw-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Titulo" class="control-label">Título de la Lección</label>
+                        <input asp-for="Titulo" class="form-control custom-input" placeholder="Ej: Introducción a las variables..." />
+                        <span asp-validation-for="Titulo" class="text-danger small fw-bold"></span>
+                    </div>
+
+                    <div class="form-group editor-container mt-5 mb-4">
+                        <label asp-for="ContenidoTeorico" class="control-label fs-4 mb-3 d-block text-center">
+                            <i class="bi bi-journal-richtext me-2 text-primary"></i>Contenido Teórico
+                        </label>
+                        <textarea asp-for="ContenidoTeorico" id="editor-texto" class="form-control"></textarea>
+                        <span asp-validation-for="ContenidoTeorico" class="text-danger small fw-bold text-center d-block mt-2"></span>
+                    </div>
+
+                    <div class="form-group mt-5">
+                        <button type="submit" class="btn-submit">
+                            <i class="bi bi-save me-2"></i> Guardar Lección
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <script>
+        tinymce.init({
+            selector: '#editor-texto',
+            height: 600, /* Lo he hecho más alto para que sea más cómodo editar */
+            menubar: true, /* Activamos el menú superior (Archivo, Editar, Ver, Insertar...) */
+
+            /* Cargamos TODAS las herramientas disponibles en la versión gratuita */
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount emoticons',
+
+            /* Organizamos la barra de herramientas para que tenga de todo */
+            toolbar: 'undo redo | formatselect fontselect fontsizeselect | ' +
+                     'bold italic underline strikethrough | forecolor backcolor | ' +
+                     'alignleft aligncenter alignright alignjustify | ' +
+                     'bullist numlist outdent indent | ' +
+                     'link image media table emoticons | ' +
+                     'removeformat | fullscreen preview code help',
+
+            content_style: 'body { font-family: "Outfit", sans-serif; font-size: 16px; color: #333; line-height: 1.6; }',
+            branding: false,
+            promotion: false,
+            language: 'es' /* Opcional: si el CDN lo soporta, intentará poner la interfaz en español */
+        });
+    </script>
+}

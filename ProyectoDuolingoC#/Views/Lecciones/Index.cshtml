@@ -1,8 +1,5 @@
-﻿@model string
+﻿@model Leccion
 
-@{
-    ViewData["Title"] = "Contenido de la Lección";
-}
 
 <style>
     body {
@@ -85,11 +82,11 @@
 <div class="page-wrapper">
     <div class="lesson-sheet">
         <div class="content-text">
-            @Html.Raw(Model)
+            @Html.Raw(Model.ContenidoTeorico)
         </div>
 
         <div class="button-container">
-            <a href="#" class="btn-continue">¡ENTENDIDO!</a>
+            <a asp-action="Menu" asp-controller="Preguntas" asp-route-id="@Model.LeccionID" class="btn-continue">¡ENTENDIDO!</a>
         </div>
     </div>
 </div>

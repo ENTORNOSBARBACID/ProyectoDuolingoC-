@@ -14,6 +14,7 @@ string connectionString = builder.Configuration.GetConnectionString("SqlProyecto
 builder.Services.AddTransient<RepositoryLogIn>();
 builder.Services.AddTransient<RepositoryCursos>();
 builder.Services.AddTransient<RepositoryLecciones>();
+builder.Services.AddTransient<RepositoryPreguntas>();
 builder.Services.AddDbContext<ProyectoContext>(options => options.UseSqlServer(connectionString));
 var app = builder.Build();
 

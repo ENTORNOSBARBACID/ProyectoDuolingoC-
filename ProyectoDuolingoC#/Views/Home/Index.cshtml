@@ -74,7 +74,7 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
         border-bottom: 5px solid #e9ecef;
     }
 
@@ -82,6 +82,31 @@
             transform: translateY(-10px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.08);
             border-bottom-color: var(--forest-accent);
+        }
+
+    /* --- TARJETA AÑADIR CURSO --- */
+    .add-course-card {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        border: 3px dashed #d1d5db; /* Borde discontinuo para indicar acción */
+        background-color: transparent;
+        color: inherit;
+        text-decoration: none;
+    }
+
+        .add-course-card:hover {
+            background-color: white;
+            border-color: var(--forest-accent);
+        }
+
+        .add-course-card i {
+            transition: transform 0.3s, color 0.3s;
+        }
+
+        .add-course-card:hover i {
+            transform: scale(1.1);
+            color: var(--forest-accent) !important;
         }
 
     .course-badge {
@@ -178,6 +203,13 @@
             <p class="text-muted mt-2">Vaya, parece que no hay cursos todavía...</p>
         </div>
     }
+
+    <div class="col-md-6 col-lg-4">
+        <a asp-action="Create" asp-controller="Cursos" class="course-card add-course-card">
+            <i class="bi bi-plus-circle text-muted" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+            <h3 class="fw-bold h5 text-muted mb-0">Añadir nuevo curso</h3>
+        </a>
+    </div>
 </div>
 
 @section Scripts {

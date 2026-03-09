@@ -30,5 +30,11 @@ namespace ProyectoDuolingoC_.Models
 
         [ForeignKey("LeccionID")]
         public virtual Leccion Leccion { get; set; } = null!;
+        [Column("OpcionCorrectaID")]
+        public int? OpcionCorrectaID { get; set; }
+
+        // Navegación hacia la opción ganadora
+        [ForeignKey("OpcionCorrectaID")]
+        public virtual OpcionRespuesta? OpcionGanadora { get; set; }
     }
 }

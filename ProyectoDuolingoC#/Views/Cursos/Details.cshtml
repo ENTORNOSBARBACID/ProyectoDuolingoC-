@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Curso de " + Model.Titulo;
-    List<Leccion> lecciones = ViewData["LECCIONES"] as List<Leccion>; 
+    List<Leccion> lecciones = ViewData["LECCIONES"] as List<Leccion>;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
@@ -14,9 +14,9 @@
         --f-accent: #58cc02;
     }
 
-    body { 
-        font-family: 'Outfit', sans-serif; 
-        background-color: #fdfdfd; 
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #fdfdfd;
     }
 
     /* --- HERO CON IMAGEN DINÁMICA --- */
@@ -45,10 +45,17 @@
         transition: 0.3s;
     }
 
-    .btn-return:hover { color: white; transform: translateX(-5px); }
+        .btn-return:hover {
+            color: white;
+            transform: translateX(-5px);
+        }
 
     /* --- CONTENEDOR DE CONTENIDO --- */
-    .overlap-content { margin-top: -6rem; position: relative; z-index: 10; }
+    .overlap-content {
+        margin-top: -6rem;
+        position: relative;
+        z-index: 10;
+    }
 
     /* Sidebar Flotante */
     .enroll-card {
@@ -76,11 +83,11 @@
     }
 
 
-    .btn-enroll-now:hover {
-        transform: scale(1.03) translateY(-5px);
-        filter: brightness(1.1);
-        color: white;
-    }
+        .btn-enroll-now:hover {
+            transform: scale(1.03) translateY(-5px);
+            filter: brightness(1.1);
+            color: white;
+        }
 
     /* --- LISTA DE LECCIONES --- */
     .lesson-box {
@@ -90,7 +97,7 @@
         border: 1px solid #f0f0f0;
     }
 
-    .lesson-strip {
+    .lesson-strip, .lesson-strip-disabled {
         display: flex;
         align-items: center;
         padding: 1.5rem;
@@ -99,15 +106,48 @@
         margin-bottom: 1rem;
         text-decoration: none;
         color: inherit;
-        border: 1px solid #f0f0f0;
+        border: 1.5px solid #f0f0f0;
         transition: 0.3s;
     }
 
-    .lesson-strip:hover {
-        border-color: var(--f-accent);
-        background: #f8fbf9;
-        transform: translateX(10px);
+        .lesson-strip:hover {
+            border-color: var(--f-accent);
+            background: #f8fbf9;
+            transform: translateX(10px);
+        }
+
+    .lesson-strip-disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
+
+        .lesson-strip-disabled:hover {
+            border-color: red;
+            background: #fffafa; /* Un fondo rojizo muy sutil en lugar del verde */
+            transform: translateX(10px);
+        }
+
+    /* --- AÑADIR LECCIÓN --- */
+    .lesson-strip-add {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem;
+        background: transparent;
+        border-radius: 20px;
+        margin-bottom: 1rem;
+        text-decoration: none;
+        color: #6c757d;
+        border: 2px dashed #d1d5db;
+        transition: 0.3s;
+        justify-content: center;
+    }
+
+        .lesson-strip-add:hover {
+            background: white;
+            border-color: var(--f-accent);
+            color: var(--f-accent);
+            transform: scale(1.02);
+        }
 
     .lesson-idx {
         width: 45px;
@@ -123,8 +163,14 @@
     }
 
     @@media (max-width: 991px) {
-        .overlap-content { margin-top: 2rem; }
-        .hero-full { border-radius: 0; min-height: 300px; }
+        .overlap-content {
+            margin-top: 2rem;
+        }
+
+        .hero-full {
+            border-radius: 0;
+            min-height: 300px;
+        }
     }
 </style>
 
@@ -142,11 +188,9 @@
     </div>
 </div>
 
-
-
 <div class="container overlap-content">
     <div class="row g-5">
-        
+
         <div class="col-lg-8">
             <div class="lesson-box shadow-sm animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
                 <h4 class="fw-bold mb-4">Descripción del Programa</h4>
@@ -155,14 +199,15 @@
                 </p>
 
                 <h4 class="fw-bold mb-4">Plan de Estudios</h4>
-                @if(ViewData["CURSO"] is false)
+
+                @if (lecciones != null && lecciones.Any())
                 {
-                    @if (lecciones != null )
+                    int idx = 1;
+                    foreach (var leccion in lecciones)
                     {
-                        int idx = 1;
-                        foreach (var leccion in lecciones)
+                        if (ViewData["CURSO"] is false && ViewData["LECCION"] != null && leccion.Orden <= (int)ViewData["LECCION"] )
                         {
-                            <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID" class="lesson-strip animate__animated animate__fadeInLeft" 
+                            <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID" class="lesson-strip animate__animated animate__fadeInLeft"
                                style="animation-delay: @(0.4 + (idx * 0.1))s">
                                 <div class="lesson-idx">@idx</div>
                                 <div class="flex-grow-1">
@@ -170,36 +215,37 @@
                                     <small class="text-muted">Módulo de aprendizaje • 20-40 min</small>
                                 </div>
                             </a>
-                            idx++;
                         }
+                        else 
+                        {
+                            <div class="lesson-strip-disabled animate__animated animate__fadeInLeft" style="animation-delay: @(0.4 + (idx * 0.1))s">
+                                <div class="lesson-idx" style="background: #f1f3f5; color: #adb5bd;">@idx</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-bold text-muted">@leccion.Titulo</h6>
+                                    <small class="text-muted"><i class="bi bi-lock-fill"></i> Bloqueado • 20-40 min</small>
+                                </div>
+                            </div>
+                        }
+                        idx++;
                     }
                 }
                 else
                 {
-                    @if (lecciones != null)
-                    {
-                        int idx = 1;
-                        foreach (var leccion in lecciones)
-                        {
-                            <a class="lesson-strip animate__animated animate__fadeInLeft"
-                               style="animation-delay: @(0.4 + (idx * 0.1))s">
-                                <div class="lesson-idx">@idx</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
-                                    <small class="text-muted">Módulo de aprendizaje • 20-40 min</small>
-                                </div>
-                            </a>
-                            idx++;
-                        }
-                    }
+                    <p class="text-muted mb-4"><i class="bi bi-info-circle me-2"></i>Aún no hay lecciones creadas para este curso.</p>
                 }
+
+                <a asp-action="Create" asp-controller="Lecciones" asp-route-id="@Model.CursoID" class="lesson-strip-add mt-4">
+                    <i class="bi bi-plus-circle me-2 fs-4"></i>
+                    <h6 class="mb-0 fw-bold">Añadir nueva lección</h6>
+                </a>
+
             </div>
         </div>
 
         <div class="col-lg-4">
             <div class="enroll-card animate__animated animate__fadeInRight" style="animation-delay: 0.5s">
                 <h3 class="fw-bold mb-3">Empieza Hoy</h3>
-                
+
                 <div class="mb-4">
                     <div class="d-flex align-items-center mb-2">
                         <i class="bi bi-check-lg text-success me-2"></i>
@@ -210,32 +256,31 @@
                         <span class="small fw-bold">Certificado de experto</span>
                     </div>
                 </div>
-                @if(ViewData["CURSO"] is true)
+
+                @if (ViewData["CURSO"] is true)
                 {
-                <form asp-controller="Cursos" asp-action="Inscribirse" asp-route-id = "@Model.CursoID" method="post">
-                    <input type="hidden" name="cursoId" value="@Model.CursoID" />
-                    <button type="submit" class="btn-enroll-now">
-                        Inscribirme Ahora
-                    </button>
-                </form>
-                }
-                else
-                {
-                    <form asp-controller="Lecciones" asp-action="VerLecciones" asp-route-id="@Model.CursoID" method="post">
+                    <form asp-controller="Cursos" asp-action="Inscribirse" method="post">
                         <input type="hidden" name="cursoId" value="@Model.CursoID" />
                         <button type="submit" class="btn-enroll-now">
-                            Ver Curso
+                            Inscribirme Ahora
                         </button>
                     </form>
                 }
+                else
+                {
+                    <button type="button" class="btn-enroll-now" style="background-color: #e9ecef; color: #6c757d; box-shadow: none; cursor: default;" disabled>
+                        <i class="bi bi-check-circle-fill me-2"></i> Estás Apuntado
+                    </button>
+                }
+
                 @if (TempData["SUCCESS"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show animate__animated animate__bounceIn" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SUCCESS"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                
+                {
+                    <div class="alert alert-success alert-dismissible fade show animate__animated animate__bounceIn mt-3" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SUCCESS"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
                 <p class="text-center mt-3 small text-muted">
                     Únete a más de 1,200 alumnos registrados.
                 </p>
@@ -248,6 +293,4 @@
 <div class="py-5"></div>
 
 @section Scripts {
-
-    
 }

@@ -12,6 +12,7 @@ namespace ProyectoDuolingoC_.Data
         public DbSet<Autenticacion> Autenticacion { get; set; }
         public DbSet<Leccion> Leccion { get; set; }
         public DbSet<Pregunta> Pregunta { get; set; }
+        public DbSet<OpcionRespuesta> OpcionRespuesta { get; set; }
         public DbSet<ProgresoUsuario> ProgresoUsuario { get; set; }
         public DbSet<CursosUsuario> CursosUsuarios { get; set; }
         public DbSet<Ranking> Ranking { get; set; }

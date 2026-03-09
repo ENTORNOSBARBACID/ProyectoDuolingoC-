@@ -31,7 +31,15 @@ namespace ProyectoDuolingoC_.Controllers
             if (idUsu != null)
             {
                 CursosUsuario cursosUsuario = await this.repo.VerCursousuarioAsync(id, idUsu.Value);
-
+                List<ProgresoUsuario> progreso = await this.repoLec.VerProgresoUsuarioListAsync(idUsu.Value);
+                if(progreso != null && progreso.Any())
+                {
+                    ViewData["LECCION"] = progreso.Last().LeccionID ;
+                }
+                else
+                {
+                    ViewData["LECCION"] = 1;
+                }
                 ViewData["CURSO"] = cursosUsuario == null;
             }
             else
