@@ -1,0 +1,336 @@
+﻿@model ProyectoDuolingoC_.Models.Pregunta
+
+@{
+    ViewData["Title"] = "Crear Pregunta";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+<style>
+    :root {
+        --f-dark: #1a4332;
+        --f-dark-shadow: #0d2219;
+        --f-bg: #fdfdfd;
+        --border-color: #e5e5e5;
+        --input-bg: #f8f9fa;
+        --f-selected-bg: #eef3f0;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    .create-wrapper {
+        max-width: 700px;
+        margin: 3rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .form-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+    }
+
+    .page-title {
+        color: var(--f-dark);
+        font-weight: 900;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .page-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #3c3c3c;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control, .form-select {
+        background-color: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        font-family: 'Outfit', sans-serif;
+        color: #3c3c3c;
+        transition: 0.2s;
+        width: 100%;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--f-dark);
+            background-color: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(26, 67, 50, 0.1);
+        }
+
+    .btn-save {
+        background: var(--f-dark);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 1.2rem;
+        font-weight: 800;
+        font-size: 1.2rem;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 8px 0 var(--f-dark-shadow), 0 15px 20px rgba(26, 67, 50, 0.2);
+        margin-top: 1.5rem;
+        transition: 0.2s;
+    }
+
+        .btn-save:hover {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 var(--f-dark-shadow), 0 10px 15px rgba(26, 67, 50, 0.2);
+        }
+
+        .btn-save:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 transparent;
+        }
+
+    .btn-back {
+        color: #adb5bd;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+        transition: 0.2s;
+    }
+
+        .btn-back:hover {
+            color: var(--f-dark);
+            transform: translateX(-3px);
+        }
+
+    .CodeMirror {
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        font-family: 'Consolas', 'Courier New', monospace;
+        /* --- TARJETAS GIGANTES VERDADERO/FALSO --- */
+        .grid-vf {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .card-vf {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+        }
+
+            .card-vf:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+                border-color: #ced4da;
+            }
+            /* Ocultamos el circulito feo del radio button */
+            .card-vf input[type="radio"] {
+                display: none;
+            }
+
+        .icon-vf {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            color: #adb5bd;
+            transition: 0.2s;
+        }
+
+        .texto-vf {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #6c757d;
+            transition: 0.2s;
+        }
+        /* Magia CSS: Cuando una tarjeta está seleccionada (sea Verdadero o Falso) */
+        .card-vf:has(input[type="radio"]:checked) {
+            border-color: var(--f-dark); /* Tu verde bosque */
+            background: var(--f-selected-bg); /* Fondo suave verde bosque */
+        }
+
+            .card-vf:has(input[type="radio"]:checked) .icon-vf,
+            .card-vf:has(input[type="radio"]:checked) .texto-vf {
+                color: var(--f-dark); /* Texto e icono en verde bosque */
+            }
+    }
+</style>
+
+<div class="create-wrapper">
+    <div class="animate__animated animate__fadeInDown">
+        <a asp-action="VerPreguntas" asp-route-idLec="@Model.LeccionID" class="btn-back">
+            <i class="bi bi-arrow-left-short fs-4"></i> Volver a la lista
+        </a>
+    </div>
+
+    <div class="form-card animate__animated animate__fadeInUp">
+        <h1 class="page-title">Nueva Pregunta</h1>
+        <p class="page-subtitle">Añade un nuevo desafío para tus alumnos.</p>
+
+        <form asp-action="Create" method="post" onsubmit="prepararEnvio()">
+            <input type="hidden" asp-for="LeccionID" />
+
+            <div class="form-group">
+                <label asp-for="TextoPregunta" class="form-label">Enunciado de la pregunta</label>
+                <textarea asp-for="TextoPregunta" class="form-control" rows="3" placeholder="Ej: ¿Qué etiqueta HTML se usa para un párrafo?" required></textarea>
+                <span asp-validation-for="TextoPregunta" class="text-danger small fw-bold"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label asp-for="TipoPregunta" class="form-label">Tipo de Pregunta</label>
+                    <select asp-for="TipoPregunta" class="form-select" id="selectTipoPregunta" onchange="togglePaneles()" required>
+                        <option value="OpcionMultiple">Opción Múltiple</option>
+                        <option value="VerdaderoFalso">Verdadero / Falso</option>
+                        <option value="CompletarCodigo">Completar Código</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <label asp-for="PuntosXP" class="form-label">Puntos de Experiencia</label>
+                    <input asp-for="PuntosXP" type="number" class="form-control" min="5" step="5" value="10" required />
+                </div>
+            </div>
+
+            <div id="panelCodigo" style="display: none;" class="form-group p-4 mt-3" style="background: #f8f9fa; border-radius: 15px; border: 2px dashed #ced4da;">
+                <label asp-for="RespuestaCorrecta" class="form-label text-primary">
+                    <i class="bi bi-code-square me-2"></i> Respuesta de Código
+                </label>
+                <div class="editor-wrapper animate__animated animate__fadeIn">
+                    <textarea id="editor-codigo" name="RespuestaCorrecta"></textarea>
+                </div>
+                <small class="text-muted mt-2 d-block">Escribe exactamente el código que el alumno debe introducir.</small>
+            </div>
+
+            <div id="panelOpciones" class="form-group p-4 mt-3 animate__animated animate__fadeIn" style="background: var(--f-selected-bg); border-radius: 15px; border: 2px dashed #a3bcae;">
+                <label class="form-label mb-1" style="color: var(--f-dark);">
+                    <i class="bi bi-ui-checks me-2"></i> Opciones de Respuesta
+                </label>
+                <p class="text-muted small mb-0">
+                    Guarda esta pregunta primero. Después serás redirigido automáticamente a la pantalla donde podrás añadirle todas las opciones posibles (A, B, C...) y marcar cuál es la correcta.
+                </p>
+                <input type="hidden" name="RespuestaCorrecta" id="hiddenOpcionMultiple" value="PorDefinir" disabled>
+            </div>
+
+            <div id="panelVerdaderoFalso" class="form-group p-4 mt-3 animate__animated animate__fadeIn" style="display: none; background: var(--f-selected-bg); border-radius: 15px; border: 2px dashed #a3bcae;">
+                <label class="form-label mb-2" style="color: var(--f-dark); font-size: 1.1rem;">
+                    <i class="bi bi-ui-checks me-2"></i> Selecciona la respuesta correcta:
+                </label>
+
+                <div class="grid-vf">
+                    <label class="card-vf">
+                        <input type="radio" asp-for="RespuestaCorrecta" value="Verdadero" class="radio-vf">
+                        <span class="texto-vf">Verdadero</span>
+                    </label>
+
+                    <label class="card-vf">
+                        <input type="radio" asp-for="RespuestaCorrecta" value="Falso" class="radio-vf">
+                        <span class="texto-vf">Falso</span>
+                    </label>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn-save">
+                <i class="bi bi-plus-circle-fill me-2"></i> Crear Pregunta
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+
+    <script>
+        var editor = null;
+
+        // 1. Inicializamos CodeMirror
+        if (document.getElementById("editor-codigo")) {
+            editor = CodeMirror.fromTextArea(document.getElementById("editor-codigo"), {
+                lineNumbers: true,
+                mode: "text/x-csharp",
+                theme: "dracula",
+                indentUnit: 4,
+                matchBrackets: true
+            });
+            editor.setSize("100%", "150px");
+        }
+
+        // 2. Función para mostrar/ocultar los paneles según el tipo de pregunta
+        function togglePaneles() {
+            var tipo = document.getElementById("selectTipoPregunta").value;
+            var panelCodigo = document.getElementById("panelCodigo");
+            var panelOpciones = document.getElementById("panelOpciones");
+
+            if (tipo === "CompletarCodigo") {
+                panelCodigo.style.display = "block";
+                panelVerdaderoFalso.style.display = "none";
+                panelOpciones.style.display = "none";
+
+                // CodeMirror necesita un "refresh" cuando se hace visible un div oculto,
+                // si no, se ve raro hasta que haces clic en él.
+                setTimeout(function() {
+                    if (editor) editor.refresh();
+                }, 10);
+            } else if(tipo === "VerdaderoFalso"){
+                panelCodigo.style.display = "none";
+                panelVerdaderoFalso.style.display = "block";
+                panelOpciones.style.display = "none";
+                document.querySelectorAll('.radio-vf').forEach(radio => radio.required = true);
+            }else {
+                panelCodigo.style.display = "none";
+                panelVerdaderoFalso.style.display = "none";
+                panelOpciones.style.display = "block";
+            }
+        }
+
+        // Ejecutamos la función al cargar la página por si hay algún valor preseleccionado
+        togglePaneles();
+
+        // 3. Volcar datos al enviar
+        function prepararEnvio() {
+            if (editor && document.getElementById("selectTipoPregunta").value === "CompletarCodigo") {
+                editor.save();
+            }
+        }
+    </script>
+}

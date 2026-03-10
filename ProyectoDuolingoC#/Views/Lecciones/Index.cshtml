@@ -2,6 +2,11 @@
 
 
 <style>
+    :root {
+        --f-dark: #1a4332; /* El color verde oscuro que enviaste */
+        --f-dark-shadow: #0d2219; /* Una sombra más oscura para el efecto 3D del botón */
+        --f-bg: #fdfdfd;
+    }
     body {
         background-color: #f0f2f5;
         color: #333;
@@ -77,8 +82,29 @@
             transform: translateY(5px);
             border-bottom-width: 0px;
         }
-</style>
 
+    .btn-return {
+        color: var(--f-dark);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        margin-top: 2rem;
+        margin-left: 2rem;
+        opacity: 0.7;
+    }
+
+        .btn-return:hover {
+            opacity: 1;
+            transform: translateX(-5px);
+        }
+
+</style>
+<a asp-action="Details" asp-controller="Cursos" asp-route-id="@Model.CursoID" class="btn-return animate__animated animate__fadeIn" style="animation-delay: 0.9s;">
+    <i class="bi bi-arrow-left-short fs-3"></i> Volver a cursos
+</a>
 <div class="page-wrapper">
     <div class="lesson-sheet">
         <div class="content-text">

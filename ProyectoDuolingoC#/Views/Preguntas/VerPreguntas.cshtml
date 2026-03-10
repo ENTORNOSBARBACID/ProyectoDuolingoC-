@@ -140,10 +140,33 @@
             transform: translateY(8px);
             box-shadow: 0 0 0 transparent;
         }
+
+    .btn-return {
+        color: var(--f-dark);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        margin-top: 2rem;
+        margin-left: 2rem;
+        opacity: 0.7;
+    }
+
+        .btn-return:hover {
+            opacity: 1;
+            transform: translateX(-5px);
+        }
 </style>
 
 <div class="preguntas-wrapper">
-    <h1 class="page-title animate__animated animate__fadeInDown">Gestión de Preguntas</h1>
+    <h1 class="page-title animate__animated animate__fadeInDown">Gestión de Preguntas</h1><br />
+    <div class="animate__animated animate__fadeInDown">
+        <a asp-action="Menu" asp-route-id="@leccionId" class="btn-return animate__animated animate__fadeIn">
+            <i class="bi bi-arrow-left-short fs-4"></i> Volver al menu
+        </a>
+    </div>
 
     <div class="preguntas-list">
         @if (Model != null && Model.Any())

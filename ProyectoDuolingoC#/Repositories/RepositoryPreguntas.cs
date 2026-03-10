@@ -41,5 +41,15 @@ namespace ProyectoDuolingoC_.Repositories
                 .ToListAsync();
             return preguntas;
         }
+        public async Task ActualizarPregunta(Pregunta pregunta)
+        {
+            this.context.Pregunta.Update(pregunta);
+            await this.context.SaveChangesAsync();
+        }
+        public async Task CrearPregunta(Pregunta pregunta)
+        {
+            await this.context.Pregunta.AddAsync(pregunta);
+            await this.context.SaveChangesAsync();
+        }
     }
 }

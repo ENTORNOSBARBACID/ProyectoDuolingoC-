@@ -106,9 +106,72 @@ namespace ProyectoDuolingoC_.Controllers
             }
             return View(preg);
         }
-        public async Task<IActionResult> Create()
+        [HttpPost]
+        public async Task<IActionResult> Update(Pregunta preguntaModificada)
         {
-            return View();
+
+                await this.repo.ActualizarPregunta(preguntaModificada);
+
+                TempData["MENSAJE"] = "¡Pregunta actualizada con éxito!";
+                TempData["TIPO_MENSAJE"] = "success";
+
+                return RedirectToAction("VerPreguntas", new { idLec = preguntaModificada.LeccionID });
+        }
+        public IActionResult Create(int leccionId)
+        {
+            Pregunta nuevaPregunta = new Pregunta
+            {
+                LeccionID = leccionId
+            };
+            return View(nuevaPregunta);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Create(Pregunta pregunta)
+        {
+
+            if (pregunta.TipoPregunta == "OpcionMultiple")
+            {
+                pregunta.RespuestaCorrecta = "PorDefinir";
+            }
+
+            await this.repo.CrearPregunta(pregunta);
+
+            if(pregunta.TipoPregunta == "OpcionMultiple") {
+                return RedirectToAction("VerOpciones", new { id = pregunta.PreguntaID });
+            }
+
+            return RedirectToAction("VerPreguntas", new { idLec = pregunta.LeccionID });
+        }
+        [HttpGet]
+        public async Task<IActionResult> VerOpciones(int id) 
+        {
+            List<OpcionRespuesta> opciones = await this.repo.VerOpciones(id);
+
+            ViewData["PreguntaID"] = id;
+
+            return View(opciones);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddOption(int PreguntaID, string TextoOpcion)
+        {
+            if (!string.IsNullOrWhiteSpace(TextoOpcion))
+            {
+                // Aquí llamas a tu repositorio para insertar la opción
+                // await this.repo.InsertarOpcion(PreguntaID, TextoOpcion);
+            }
+
+            return RedirectToAction("VerOpciones", new { id = PreguntaID });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteOption(int OpcionID, int PreguntaID)
+        {
+            // Aquí llamas a tu repositorio para borrar la opción por su ID
+            // await this.repo.EliminarOpcion(OpcionID);
+
+            // Recargamos la misma pantalla
+            return RedirectToAction("VerOpciones", new { id = PreguntaID });
         }
     }
 }

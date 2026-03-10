@@ -9,6 +9,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
 <style>
     :root {
         --f-dark: #1a4332;
@@ -157,6 +160,13 @@
             color: var(--f-dark);
             transform: translateX(-3px);
         }
+
+    /* 2. Añadimos un pequeño borde al editor para que quede integrado */
+    .CodeMirror {
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        font-family: 'Consolas', 'Courier New', monospace;
+    }
 </style>
 
 <div class="update-wrapper">
@@ -170,10 +180,12 @@
         <h1 class="page-title">Editar Pregunta</h1>
         <p class="page-subtitle">Modifica los detalles de esta pregunta.</p>
 
-        <form asp-action="Update" method="post">
+        <form asp-action="Update" method="post" onsubmit="prepararEnvio()">
             <input type="hidden" asp-for="PreguntaID" />
             <input type="hidden" asp-for="LeccionID" />
-            <input type="hidden" asp-for="TipoPregunta" /> <div class="form-group">
+            <input type="hidden" asp-for="TipoPregunta" />
+
+            <div class="form-group">
                 <label asp-for="TextoPregunta" class="form-label">Enunciado de la pregunta</label>
                 <textarea asp-for="TextoPregunta" class="form-control" rows="3" required></textarea>
                 <span asp-validation-for="TextoPregunta" class="text-danger small fw-bold"></span>
@@ -190,7 +202,9 @@
                     <label asp-for="RespuestaCorrecta" class="form-label text-primary">
                         <i class="bi bi-code-square me-2"></i> Respuesta de Código
                     </label>
-                    <textarea asp-for="RespuestaCorrecta" class="form-control mt-2" rows="2" required></textarea>
+                    <div class="editor-wrapper animate__animated animate__fadeInUp">
+                        <textarea id="editor-codigo" name="RespuestaCorrecta">@Model.RespuestaCorrecta</textarea>
+                    </div>
                     <small class="text-muted mt-2 d-block">Escribe exactamente el código que el alumno debe introducir para ganar.</small>
                 </div>
             }
@@ -203,11 +217,13 @@
 
                     @if (opciones != null && opciones.Any())
                     {
+                        <input type="hidden" asp-for="RespuestaCorrecta" id="HiddenRespuestaCorrecta" />
+
                         <div class="mt-3">
                             @foreach (var opcion in opciones)
                             {
                                 <label class="opcion-card">
-                                    <input type="radio" asp-for="OpcionCorrectaID" value="@opcion.OpcionID" required>
+                                    <input type="radio" asp-for="OpcionCorrectaID" value="@opcion.OpcionID" required onchange="document.getElementById('HiddenRespuestaCorrecta').value = '@opcion.TextoOpcion'">
                                     <span class="opcion-texto">
                                         @opcion.TextoOpcion
                                     </span>
@@ -240,4 +256,29 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/sql/sql.min.js"></script>
+
+    <script>
+        var editor = null;
+
+        if (document.getElementById("editor-codigo")) {
+            editor = CodeMirror.fromTextArea(document.getElementById("editor-codigo"), {
+                lineNumbers: true,
+                mode: "text/x-csharp",
+                theme: "dracula",
+                indentUnit: 4,
+                matchBrackets: true
+            });
+            editor.setSize("100%", "150px"); // Lo hago un pelín más pequeño para que no ocupe tanto en edición
+        }
+
+        function prepararEnvio() {
+            if (editor) {
+                editor.save();
+            }
+        }
+    </script>
 }

@@ -1,0 +1,245 @@
+﻿@model IEnumerable<ProyectoDuolingoC_.Models.OpcionRespuesta>
+
+@{
+    ViewData["Title"] = "Gestionar Opciones";
+    // Recuperamos el ID de la pregunta (es vital para el botón de Volver y para Añadir)
+    int preguntaId = (int)ViewData["PreguntaID"];
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --f-dark: #1a4332;
+        --f-dark-shadow: #0d2219;
+        --f-bg: #fdfdfd;
+        --border-color: #e5e5e5;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    .options-wrapper {
+        max-width: 600px;
+        margin: 3rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .page-title {
+        color: var(--f-dark);
+        font-weight: 900;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .page-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-back {
+        color: #adb5bd;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+        transition: 0.2s;
+    }
+
+        .btn-back:hover {
+            color: var(--f-dark);
+            transform: translateX(-3px);
+        }
+
+    /* --- TARJETAS DE OPCIONES EXISTENTES --- */
+    .opcion-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        transition: 0.2s;
+    }
+
+        .opcion-item:hover {
+            border-color: #ced4da;
+            transform: translateY(-2px);
+        }
+
+    .opcion-texto {
+        font-weight: 600;
+        color: #3c3c3c;
+        font-size: 1.1rem;
+        word-break: break-word;
+        padding-right: 15px;
+    }
+
+    .btn-delete {
+        background: #fff0f0;
+        color: #ff4b4b;
+        border: none;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+
+        .btn-delete:hover {
+            background: #ff4b4b;
+            color: white;
+            transform: scale(1.05);
+        }
+
+    /* --- CAJA PARA AÑADIR NUEVA OPCIÓN --- */
+    .add-box {
+        background: #eef3f0; /* Fondo suavizado de tu verde */
+        border: 2px dashed var(--f-dark);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .form-control {
+        border: 2px solid white;
+        border-radius: 12px;
+        padding: 1rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        width: 100%;
+        margin-bottom: 1rem;
+        transition: 0.2s;
+        box-shadow: 0 4px 10px rgba(26, 67, 50, 0.05);
+    }
+
+        .form-control:focus {
+            border-color: var(--f-dark);
+            outline: none;
+        }
+
+    .btn-add {
+        background: var(--f-dark);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-weight: 800;
+        font-size: 1.1rem;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 5px 0 var(--f-dark-shadow);
+        transition: 0.2s;
+    }
+
+        .btn-add:hover {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 var(--f-dark-shadow);
+        }
+
+        .btn-add:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 transparent;
+        }
+</style>
+
+<div class="options-wrapper">
+    <div class="animate__animated animate__fadeInDown">
+        <a asp-action="Update" asp-route-id="@preguntaId" class="btn-back">
+            <i class="bi bi-arrow-left-short fs-4"></i> Volver a la pregunta
+        </a>
+    </div>
+
+    <h1 class="page-title animate__animated animate__fadeInDown">Respuestas</h1>
+    <p class="page-subtitle animate__animated animate__fadeInDown">Configura las posibles opciones que verá el alumno.</p>
+
+    <div class="opciones-list">
+        @if (Model != null && Model.Any())
+        {
+            int idx = 1;
+            foreach (var opcion in Model)
+            {
+                <div class="opcion-item animate__animated animate__fadeInUp" style="animation-delay: @(idx * 0.1)s;">
+                    <span class="opcion-texto">@opcion.TextoOpcion</span>
+
+                    <form asp-action="DeleteOption" method="post" onsubmit="confirmarBorrado(event, this)">
+                        <input type="hidden" name="OpcionID" value="@opcion.OpcionID" />
+                        <input type="hidden" name="PreguntaID" value="@preguntaId" />
+                        <button type="submit" class="btn-delete" title="Borrar Opción">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+
+                    </form>
+                </div>
+                idx++;
+            }
+        }
+        else
+        {
+            <div class="alert alert-warning text-center fw-bold animate__animated animate__fadeIn">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> No has añadido ninguna opción aún.
+            </div>
+        }
+    </div>
+
+    <div class="add-box animate__animated animate__zoomIn" style="animation-delay: 0.4s;">
+        <h5 class="fw-bold mb-3" style="color: var(--f-dark);">
+            <i class="bi bi-plus-circle-fill me-2"></i> Añadir nueva opción
+        </h5>
+
+        <form asp-action="AddOption" method="post">
+            <input type="hidden" name="PreguntaID" value="@preguntaId" />
+
+            <input type="text" name="TextoOpcion" class="form-control" placeholder="Escribe el texto de la respuesta (Ej: x = 5)" required autocomplete="off" />
+
+            <button type="submit" class="btn-add">Añadir</button>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function confirmarBorrado(event, form) {
+            // 1. Detenemos el envío automático del formulario
+            event.preventDefault();
+
+            // 2. Lanzamos el SweetAlert
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "Esta opción se eliminará de la pregunta de forma permanente.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4b4b', // Rojo peligro
+                cancelButtonColor: '#1a4332',  // Tu verde bosque
+                confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, borrar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true, // Pone el botón de cancelar a la izquierda (mejor UX)
+                customClass: {
+                    popup: 'rounded-4' // Para que las esquinas coincidan con tu estilo
+                }
+            }).then((result) => {
+                // 3. Si el profesor hizo clic en "Sí, borrar", enviamos el formulario manualmente
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+    </script>
+}

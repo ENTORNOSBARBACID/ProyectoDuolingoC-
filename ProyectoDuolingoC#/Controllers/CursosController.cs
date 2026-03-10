@@ -38,7 +38,7 @@ namespace ProyectoDuolingoC_.Controllers
                 }
                 else
                 {
-                    ViewData["LECCION"] = 1;
+                    ViewData["LECCION"] = 3;
                 }
                 ViewData["CURSO"] = cursosUsuario == null;
             }
