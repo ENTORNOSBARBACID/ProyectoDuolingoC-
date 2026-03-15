@@ -193,6 +193,15 @@
         @switch (Model.TipoPregunta)
         {
             case "VerdaderoFalso":
+                <label class="opcion-card animate__animated animate__fadeInUp">
+                    <input type="radio" name="RespuestaAlumno" value="Verdadero" required>
+                    <span class="opcion-texto">Verdadero</span>
+                </label>
+                <label class="opcion-card animate__animated animate__fadeInUp">
+                    <input type="radio" name="RespuestaAlumno" value="Falso" required>
+                    <span class="opcion-texto">Falso</span>
+                </label>
+                    break;
             case "OpcionMultiple":
                 @if (opciones != null && opciones.Any())
                 {

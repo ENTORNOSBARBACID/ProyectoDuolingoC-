@@ -25,6 +25,8 @@ namespace ProyectoDuolingoC_.Models
 
         [Column("Imagen")]
         public byte[]? Imagen { get; set; }
+        [NotMapped] 
+        public int PorcentajeProgreso { get; set; }
 
         public virtual ICollection<Leccion> Lecciones { get; set; } = new List<Leccion>();
     }

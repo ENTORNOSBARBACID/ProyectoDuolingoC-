@@ -62,5 +62,12 @@ namespace ProyectoDuolingoC_.Repositories
                 }
             }
         }
+        public async Task<Usuario> FindUsuarioByIDAsync(int id)
+        {
+            Usuario user = await this.context.Usuario
+                             .Include(u => u.Autenticacion)
+                             .FirstOrDefaultAsync(u => u.UsuarioID == id);
+            return user;
+        }
     }
 }

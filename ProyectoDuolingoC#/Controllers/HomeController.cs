@@ -58,6 +58,16 @@ namespace ProyectoDuolingoC_.Controllers
             HttpContext.Session.Remove("ID");
             return RedirectToAction("Index");
         }
+        public async Task<IActionResult> VerPerfil()
+        {
+            Usuario usu = await this.repo.FindUsuarioByIDAsync(HttpContext.Session.GetInt32("ID").Value);
+            return View(usu);
+        }
+        public async Task<IActionResult> MisCursos()
+        {
+            List<CursoProgresoVM> curso = await this.repoCursos.GetMisCursosConProgreso(HttpContext.Session.GetInt32("ID").Value);
+            return View(curso);
+        }
 
 
 

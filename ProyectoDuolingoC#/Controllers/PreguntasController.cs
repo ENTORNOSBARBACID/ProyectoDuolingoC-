@@ -58,7 +58,7 @@ namespace ProyectoDuolingoC_.Controllers
 
             bool esAcierto = false;
 
-            if (pregunta.TipoPregunta == "CompletarCodigo")
+            if (pregunta.TipoPregunta == "CompletarCodigo" || pregunta.TipoPregunta == "VerdaderoFalso")
             {
                 string textoAlumno = RespuestaAlumno.Trim().Replace(" ", "");
                 string textoCorrecto = pregunta.RespuestaCorrecta!.Trim().Replace(" ", "");
@@ -157,8 +157,7 @@ namespace ProyectoDuolingoC_.Controllers
         {
             if (!string.IsNullOrWhiteSpace(TextoOpcion))
             {
-                // Aquí llamas a tu repositorio para insertar la opción
-                // await this.repo.InsertarOpcion(PreguntaID, TextoOpcion);
+                await this.repo.InsertarOpcion(PreguntaID, TextoOpcion);
             }
 
             return RedirectToAction("VerOpciones", new { id = PreguntaID });
@@ -167,11 +166,15 @@ namespace ProyectoDuolingoC_.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteOption(int OpcionID, int PreguntaID)
         {
-            // Aquí llamas a tu repositorio para borrar la opción por su ID
-            // await this.repo.EliminarOpcion(OpcionID);
-
-            // Recargamos la misma pantalla
+            await this.repo.EliminarOpcion(OpcionID);
             return RedirectToAction("VerOpciones", new { id = PreguntaID });
+        }
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            int idLeccion = (await this.repo.VerPreguntaPorId(id)).LeccionID;
+            await this.repo.Delete(id);
+            return RedirectToAction("VerPreguntas", new { idLec = idLeccion });
         }
     }
 }

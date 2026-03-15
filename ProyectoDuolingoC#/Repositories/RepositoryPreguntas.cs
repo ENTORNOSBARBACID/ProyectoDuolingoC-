@@ -51,5 +51,38 @@ namespace ProyectoDuolingoC_.Repositories
             await this.context.Pregunta.AddAsync(pregunta);
             await this.context.SaveChangesAsync();
         }
+        public async Task InsertarOpcion(int id, string texto)
+        {
+            OpcionRespuesta nuevaOpcion = new OpcionRespuesta
+            {
+                PreguntaID = id,
+                TextoOpcion = texto
+            };
+            await this.context.OpcionRespuesta.AddAsync(nuevaOpcion);
+            await this.context.SaveChangesAsync();
+        }
+        public async Task Delete(int id)
+        {
+            Pregunta p = await VerPreguntaPorId(id);
+            if (p != null)
+            {
+                // 3. La marcamos para borrar (¡Sin el await!)
+                this.context.Pregunta.Remove(p);
+
+                // 4. Guardamos los cambios de forma asíncrona
+                await this.context.SaveChangesAsync();
+            }
+        }
+        public async Task EliminarOpcion(int id)
+        {
+            OpcionRespuesta o = await context.OpcionRespuesta
+                .Where(op => op.OpcionID == id)
+                .FirstOrDefaultAsync();
+            if (o != null)
+            {
+                this.context.OpcionRespuesta.Remove(o);
+                await this.context.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -208,6 +208,26 @@
                     <small class="text-muted mt-2 d-block">Escribe exactamente el código que el alumno debe introducir para ganar.</small>
                 </div>
             }
+            else if (Model.TipoPregunta == "VerdaderoFalso")
+            {
+                <div class="form-group p-4" style="background: var(--f-selected-bg); border-radius: 15px; border: 2px dashed #a3bcae;">
+                    <label class="form-label mb-2" style="color: var(--f-dark); font-size: 1.1rem;">
+                        <i class="bi bi-ui-checks me-2"></i> Selecciona la respuesta correcta:
+                    </label>
+
+                    <div class="grid-vf">
+                        <label class="opcion-card">
+                            <input type="radio" asp-for="RespuestaCorrecta" value="Verdadero" class="radio-vf" required>
+                            <span class="texto-vf">Verdadero</span>
+                        </label>
+
+                        <label class="opcion-card">
+                            <input type="radio" asp-for="RespuestaCorrecta" value="Falso" class="radio-vf" required>
+                            <span class="texto-vf">Falso</span>
+                        </label>
+                    </div>
+                </div>
+            }
             else
             {
                 <div class="form-group p-4" style="background: var(--f-selected-bg); border-radius: 15px; border: 2px dashed #a3bcae;">

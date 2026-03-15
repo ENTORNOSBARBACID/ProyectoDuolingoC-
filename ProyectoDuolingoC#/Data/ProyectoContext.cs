@@ -15,6 +15,7 @@ namespace ProyectoDuolingoC_.Data
         public DbSet<OpcionRespuesta> OpcionRespuesta { get; set; }
         public DbSet<ProgresoUsuario> ProgresoUsuario { get; set; }
         public DbSet<CursosUsuario> CursosUsuarios { get; set; }
+        public DbSet<CursoProgresoVM> CursosConProgreso { get; set; }
         public DbSet<Ranking> Ranking { get; set; }
 
 
@@ -33,6 +34,7 @@ namespace ProyectoDuolingoC_.Data
             modelBuilder.Entity<Leccion>().ToTable("Lecciones");
             modelBuilder.Entity<Pregunta>().ToTable("Preguntas");
             modelBuilder.Entity<Ranking>().ToTable("Ranking"); // Esta estaba en singular en tu SQL
+            modelBuilder.Entity<CursoProgresoVM>().HasNoKey();
 
             base.OnModelCreating(modelBuilder);
         }

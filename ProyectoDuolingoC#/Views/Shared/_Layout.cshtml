@@ -214,8 +214,8 @@
                     @if (Context.Session.GetInt32("ID") != null)
                     {
                         <li>
-                            <a asp-controller="Cursos" asp-action="MisCursos"
-                               class="@(controller == "Cursos" && action == "MisCursos" ? "active-link" : "")">
+                            <a asp-controller="Home" asp-action="MisCursos"
+                               class="@(controller == "Home" && action == "MisCursos" ? "active-link" : "")">
                                 <i class="bi bi-journal-check"></i>
                                 <span>Mis Cursos</span>
                             </a>

@@ -66,7 +66,7 @@ namespace ProyectoDuolingoC_.Controllers
             
             TempData["Titulo"] = "¡Genial!";
             TempData["Mensaje"] = "Te has inscrito al curso correctamente.";
-            TempData["Icono"] = "success"; // Esto mostrará el check verde
+            TempData["Icono"] = "success"; 
 
 
             return RedirectToAction("Details", new { id = id });
