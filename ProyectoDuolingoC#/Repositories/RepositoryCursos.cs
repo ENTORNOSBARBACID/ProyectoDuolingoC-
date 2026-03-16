@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoDuolingoC_.Data;
 using ProyectoDuolingoC_.Models;
@@ -56,5 +59,21 @@ namespace ProyectoDuolingoC_.Repositories
 
             return await consulta.FirstOrDefaultAsync();
         }
+        public async Task CreateCursoAsync(Curso c)
+        {
+            await this.context.Curso.AddAsync(c);
+            await this.context.SaveChangesAsync();
+        }
+
+        public async Task Delete(int id)
+        {
+
+            string sql = "SP_EliminarCursoEnCascada @CursoID";
+            SqlParameter pamId = new SqlParameter("CursoID", id);
+            await this.context.Database.ExecuteSqlRawAsync(sql, pamId);
+            await this.context.SaveChangesAsync();
+        }
+
+        
     }
 }

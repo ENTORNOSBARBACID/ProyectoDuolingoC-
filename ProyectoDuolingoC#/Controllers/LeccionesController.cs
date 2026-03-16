@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProyectoDuolingoC_.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace ProyectoDuolingoC_.Controllers
             Leccion leccion = await this.repo.VerContenido(id);
             return View("Index", leccion);
         }
+        [Authorize(Policy = "SOLOADMIN")]
         public IActionResult Create(int id)
         {
             ViewData["CURSOID"]= id;

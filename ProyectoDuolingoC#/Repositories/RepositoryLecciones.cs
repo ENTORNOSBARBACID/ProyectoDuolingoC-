@@ -59,5 +59,19 @@ namespace ProyectoDuolingoC_.Repositories
 
             await this.context.SaveChangesAsync();
         }
+        public async Task ImplementUsuarioProgreso(int idUsu, int idLec)
+        {
+            if(await VerProgresoUsuarioAsync(idUsu, idLec) == null)
+            {
+                ProgresoUsuario usuP = new ProgresoUsuario
+                {
+                    UsuarioID = idUsu,
+                    LeccionID = idLec,
+                    FechaCompletado = DateTime.Now
+                };
+                await this.context.ProgresoUsuario.AddAsync(usuP);
+                await this.context.SaveChangesAsync();
+            }
+        }
     }
 }

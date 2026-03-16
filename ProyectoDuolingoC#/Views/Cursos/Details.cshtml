@@ -3,6 +3,22 @@
 @{
     ViewData["Title"] = "Curso de " + Model.Titulo;
     List<Leccion> lecciones = ViewData["LECCIONES"] as List<Leccion>;
+
+    // 1. Lógica para la imagen de fondo:
+    string backgroundUrl = "";
+    bool tieneImagen = Model.Imagen != null && Model.Imagen.Length > 0;
+
+    if (tieneImagen)
+    {
+        // Convertimos el array de bytes a una cadena Base64 válida para CSS
+        string base64Image = Convert.ToBase64String(Model.Imagen);
+        backgroundUrl = $"url('data:image/jpeg;base64,{base64Image}')";
+    }
+    else
+    {
+        // Si no tiene imagen, ponemos un gradiente sólido de tu verde bosque
+        backgroundUrl = "linear-gradient(to right, #1a4332, #2d6a4f)";
+    }
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;900&display=swap" rel="stylesheet">
@@ -23,7 +39,18 @@
     .hero-full {
         position: relative;
         min-height: 400px;
-        background-image: linear-gradient(to right, rgba(26, 67, 50, 0.95) 30%, rgba(26, 67, 50, 0.4) 100%), url('@Model.Imagen');
+        /* ¡Aquí aplicamos la lógica de la variable backgroundUrl! */
+        @if (tieneImagen)
+        {
+            <text> background-image: linear-gradient(to right, rgba(26, 67, 50, 0.95) 30%, rgba(26, 67, 50, 0.4) 100%), @Html.Raw(backgroundUrl);
+            </text>
+        }
+        else
+        {
+
+            <text> background-image: @Html.Raw(backgroundUrl);
+            </text>
+        }
         background-size: cover;
         background-position: center;
         border-radius: 0 0 60px 60px;
@@ -259,12 +286,9 @@
 
                 @if (ViewData["CURSO"] is true)
                 {
-                    <form asp-controller="Cursos" asp-action="Inscribirse" method="post">
-                        <input type="hidden" name="cursoId" value="@Model.CursoID" />
-                        <button type="submit" class="btn-enroll-now">
+                    <a asp-controller="Cursos" asp-action="Inscribirse" asp-route-id="@Model.CursoID" class="btn-enroll-now">
                             Inscribirme Ahora
-                        </button>
-                    </form>
+                    </a>
                 }
                 else
                 {

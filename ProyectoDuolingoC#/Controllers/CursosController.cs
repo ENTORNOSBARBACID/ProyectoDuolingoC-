@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProyectoDuolingoC_.Models;
 using ProyectoDuolingoC_.Repositories;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ProyectoDuolingoC_.Controllers
@@ -26,7 +28,7 @@ namespace ProyectoDuolingoC_.Controllers
             List<Leccion> lec = await this.repoLec.LoadLecciones(id);
             ViewData["LECCIONES"] = lec;
 
-            int? idUsu = HttpContext.Session.GetInt32("ID");
+            int? idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (idUsu != null)
             {
@@ -49,6 +51,7 @@ namespace ProyectoDuolingoC_.Controllers
 
             return View(curso);
         }
+        [Authorize(policy:"SOLOESTUDIANTES")]
         public async Task<IActionResult> Inscribirse(int id)
         {
             int? idUsu = HttpContext.Session.GetInt32("ID");
@@ -70,6 +73,35 @@ namespace ProyectoDuolingoC_.Controllers
 
 
             return RedirectToAction("Details", new { id = id });
+        }
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        [Authorize(Policy = "SOLOADMIN")] // Mantenemos tu seguridad a tope
+        public async Task<IActionResult> Create(Curso curso, IFormFile archivoImagen)
+        {
+            if (archivoImagen != null && archivoImagen.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await archivoImagen.CopyToAsync(memoryStream);
+
+                    curso.Imagen = memoryStream.ToArray();
+                }
+            }
+
+            await this.repo.CreateCursoAsync(curso);
+
+            return RedirectToAction("Index", "Home");
+        }
+        [Authorize(policy: ("SOLOADMIN"))]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await this.repo.Delete(id);
+            return RedirectToAction("Index", "Home");
         }
 
     }

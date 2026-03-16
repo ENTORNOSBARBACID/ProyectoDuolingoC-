@@ -9,7 +9,7 @@
     int totalXP = Model?.Sum(p => p.PuntosXP) ?? 0;
 
     // Obtenemos el ID de la lección para el botón de volver y el de comenzar
-    int leccionId = Model?.FirstOrDefault()?.LeccionID ?? 0;
+    int leccionId = int.Parse(ViewData["LECCIONID"].ToString());
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">

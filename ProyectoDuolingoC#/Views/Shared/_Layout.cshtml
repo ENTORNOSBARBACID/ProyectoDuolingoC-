@@ -211,7 +211,7 @@
                             <span>Inicio</span>
                         </a>
                     </li>
-                    @if (Context.Session.GetInt32("ID") != null)
+                    @if (Context.User.Identity.Name != null)
                     {
                         <li>
                             <a asp-controller="Cursos" asp-action="MisCursos"
@@ -225,7 +225,7 @@
             </nav>
 
             <div class="auth-buttons">
-                @if (Context.Session.GetInt32("ID") == null)
+                @if (Context.User.Identity.Name == null)
                 {
                     <a asp-controller="Home" asp-action="LogIn" class="btn-nav btn-login-outline">
                         <span>Entrar</span>
@@ -265,5 +265,24 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if (TempData["AccesoDenegado"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: '¡Acceso Denegado!',
+                    text: '@TempData["AccesoDenegado"]',
+                    confirmButtonColor: '#1a4332', // ¡Tu verde bosque siempre presente!
+                    confirmButtonText: 'Entendido',
+                    customClass: {
+                        popup: 'rounded-4'
+                    }
+                });
+            });
+        </script>
+    }
 </body>
 </html>
