@@ -14,12 +14,12 @@ namespace ProyectoDuolingoC_.Repositories
         {
             this.context = context;
         }
-        public async Task RegisterUsuario(string nombre, string email, string imagen, int rol, string password)
+        public async Task RegisterUsuario(string nombre, string email, byte[] imagen, int rol, string password)
         {
             Usuario use = new Usuario();
             use.NombreUsuario = nombre;
             use.CorreoElectronico = email;
-            //use.Imagen = imagen;
+            use.Imagen = imagen;
             use.ExperienciaTotal = 0;
             use.Rol = rol;
             use.FechaRegistro = DateTime.Now;
@@ -68,6 +68,23 @@ namespace ProyectoDuolingoC_.Repositories
                              .Include(u => u.Autenticacion)
                              .FirstOrDefaultAsync(u => u.UsuarioID == id);
             return user;
+        }
+
+        public async Task UpdatePerfilAsync(int idUsuario, string nuevoNombre, byte[] nuevaImagen)
+        {
+            Usuario userOriginal = await this.context.Usuario.FindAsync(idUsuario);
+
+            if (userOriginal != null)
+            {
+                userOriginal.NombreUsuario = nuevoNombre;
+
+                if (nuevaImagen != null && nuevaImagen.Length > 0)
+                {
+                    userOriginal.Imagen = nuevaImagen;
+                }
+
+                await this.context.SaveChangesAsync();
+            }
         }
     }
 }

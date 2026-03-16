@@ -29,7 +29,7 @@ namespace ProyectoDuolingoC_.Models
         [Column("Rol")]
         public int Rol { get; set; }
         [Column("Imagen")]
-        public string? Imagen { get; set; }
+        public byte[]? Imagen { get; set; }
 
         // Las propiedades de navegación NO llevan [Column]
         public virtual Autenticacion? Autenticacion { get; set; }

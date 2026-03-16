@@ -32,6 +32,14 @@ namespace ProyectoDuolingoC_.Repositories
                            select datos;
             return await consulta.ToListAsync();
         }
+        public async Task<ProgresoUsuario> VerProgresoUsuarioLastAsync(int idUsu, int idCur)
+        {
+            var ultimoProgreso = await this.context.ProgresoUsuario
+                .Where(datos => datos.UsuarioID == idUsu && datos.CursoID == idCur)
+                .OrderByDescending(datos => datos.FechaCompletado) 
+                .FirstOrDefaultAsync();
+            return ultimoProgreso;
+        }
         public async Task<Leccion> VerContenido(int idLeccion)
         {
             var leccion = await context.Leccion

@@ -135,6 +135,7 @@
             transform: scale(1.02);
         }
 
+
     /* Corrección para Responsive en Razor (usar doble @@) */
     @@media (max-width: 768px) {
         .header-hero h1 {
@@ -187,7 +188,7 @@
                         </div>
                     </div>
 
-                    <a asp-action="Menu" asp-controller="Cursos" asp-route-id="@curso.CursoID" class="btn-action">
+                    <a asp-action="ContinuarAvanzando" asp-controller="Cursos" asp-route-idCurso="@curso.CursoID" class="btn-action">
                         CONTINUAR <i class="bi bi-arrow-right-short ms-1 fs-5 align-middle"></i>
                     </a>
                 </div>

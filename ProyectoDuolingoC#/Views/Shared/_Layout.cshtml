@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -211,16 +212,30 @@
                             <span>Inicio</span>
                         </a>
                     </li>
-                    @if (Context.User.Identity.Name != null)
+                    @if (Context.User.FindFirst(ClaimTypes.NameIdentifier) != null)
                     {
-                        <li>
-                            <a asp-controller="Home" asp-action="MisCursos"
-                               class="@(controller == "Home" && action == "MisCursos" ? "active-link" : "")">
-                                <i class="bi bi-journal-check"></i>
-                                <span>Mis Cursos</span>
-                            </a>
-                        </li>
-                    }
+                        @if (User.HasClaim(ClaimTypes.Role, "2"))
+                            {
+                            <li>
+                                <a asp-controller="Home" asp-action="VerEstudiantes"
+                                   class="@(controller == "Home" && action == "VerEstudiantes" ? "active-link" : "")">
+                                    <i class="bi bi-journal-check"></i>
+                                    <span>Estudiantes</span>
+                                </a>
+                            </li>
+                            
+                            }
+                            else
+                            {
+                            <li>
+                                <a asp-controller="Cursos" asp-action="MisCursos"
+                                   class="@(controller == "Cursos" && action == "MisCursos" ? "active-link" : "")">
+                                    <i class="bi bi-journal-check"></i>
+                                    <span>Mis Cursos</span>
+                                </a>
+                            </li>
+                            }
+                        }
                 </ul>
             </nav>
 
@@ -237,7 +252,12 @@
                 else
                 {
                     <a asp-controller="Home" asp-action="VerPerfil" class="btn-profile shadow-sm">
-                        <i class="bi bi-person-circle fs-5"></i>
+                        <img src="@Url.Action("GetFotoPerfil", "Home")"
+                             class="rounded-circle"
+                             style="width: 40px; height: 40px; object-fit: cover;"
+                             onerror="this.style.display='none'; document.getElementById('icono-por-defecto').style.display='inline-block';" />
+
+                        <i class="bi bi-person-circle fs-4" id="icono-por-defecto" style="display: none;"></i>
                         <span>Mi Perfil</span>
                     </a>
                     <a asp-controller="Home" asp-action="LogOut" class="text-white opacity-50 ms-2" title="Cerrar Sesión">
@@ -280,6 +300,23 @@
                     customClass: {
                         popup: 'rounded-4'
                     }
+                });
+            });
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    // Esto lee tu "success" y pone el tick verde animado arriba
+                    icon: '@TempData["TIPO_MENSAJE"]' || 'info',
+
+                    title: '¡Enhorabuena!',
+
+                    // Esto lee el texto de tu mensaje
+                    text: '@TempData["MENSAJE"]',
+
+                    // Le ponemos el color verde oscuro que usas en tu diseño para el botón
+                    confirmButtonColor: '#1a4332',
+                    confirmButtonText: '¡Genial!'
                 });
             });
         </script>

@@ -1,0 +1,255 @@
+﻿@model ProyectoDuolingoC_.Models.Usuario
+
+@{
+    ViewData["Title"] = "Editar Perfil";
+
+    // Lógica para la foto de perfil en Base64
+    bool tieneImagen = Model != null && Model.Imagen != null && Model.Imagen.Length > 0;
+    string base64Image = "";
+    if (tieneImagen)
+    {
+        base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Imagen!)}";
+    }
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --f-dark: #1a4332;
+        --f-dark-shadow: #0d2219;
+        --f-bg: #fdfdfd;
+        --border-color: #e5e5e5;
+        --input-bg: #f8f9fa;
+        --f-selected-bg: #eef3f0;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    .profile-wrapper {
+        max-width: 650px;
+        margin: 3rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .form-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 15px 35px rgba(26, 67, 50, 0.05);
+    }
+
+    .page-title {
+        color: var(--f-dark);
+        font-weight: 900;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    /* --- ESTILOS AVATAR REDONDO --- */
+    .avatar-upload-wrapper {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 2rem auto;
+        border-radius: 50%;
+        border: 3px dashed #ced4da;
+        background-color: var(--input-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+
+        .avatar-upload-wrapper:hover {
+            border-color: var(--f-dark);
+            background-color: var(--f-selected-bg);
+        }
+
+    .avatar-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: none;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #adb5bd;
+        transition: 0.3s;
+    }
+
+    .avatar-upload-wrapper:hover .upload-icon {
+        color: var(--f-dark);
+        transform: scale(1.1);
+    }
+
+    /* --- ESTILOS INPUTS --- */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #3c3c3c;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        background-color: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        font-family: 'Outfit', sans-serif;
+        color: #3c3c3c;
+        transition: 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: var(--f-dark);
+            background-color: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(26, 67, 50, 0.1);
+        }
+
+        /* Estilo especial para los campos bloqueados (readonly) */
+        .form-control[readonly] {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-color: #dee2e6;
+        }
+
+    .btn-save {
+        background: var(--f-dark);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 1.2rem;
+        font-weight: 800;
+        font-size: 1.2rem;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 8px 0 var(--f-dark-shadow), 0 15px 20px rgba(26, 67, 50, 0.2);
+        margin-top: 1rem;
+        transition: 0.2s;
+    }
+
+        .btn-save:hover {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 var(--f-dark-shadow), 0 10px 15px rgba(26, 67, 50, 0.2);
+        }
+
+        .btn-save:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 transparent;
+        }
+</style>
+
+<div class="profile-wrapper">
+    <div class="form-card animate__animated animate__zoomIn">
+        <h1 class="page-title">Mi Perfil</h1>
+        <p class="text-center text-muted mb-4">Personaliza cómo te ven los demás estudiantes.</p>
+
+        <form asp-action="Update" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="UsuarioID" />
+            <input type="hidden" asp-for="Rol" />
+
+            <div class="text-center mb-4">
+                <div class="avatar-upload-wrapper" onclick="document.getElementById('imagenArchivo').click()" title="Cambiar foto de perfil">
+                    @if (tieneImagen)
+                    {
+                        <i class="bi bi-camera-fill upload-icon position-absolute" id="uploadIcon" style="display: none; z-index: 10;"></i>
+                        <img id="preview" class="avatar-preview" src="@base64Image" style="display: block;" alt="Mi Avatar" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-camera-fill upload-icon" id="uploadIcon"></i>
+                        <img id="preview" class="avatar-preview" alt="Mi Avatar" />
+                    }
+                </div>
+                <input type="file" id="imagenArchivo" name="imagenArchivo" style="display: none;" accept="image/*" onchange="previewImage(event)" />
+                <span class="small fw-bold text-muted"><i class="bi bi-pencil-square me-1"></i> Toca el círculo para cambiar la foto</span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NombreUsuario" class="form-label">
+                    <i class="bi bi-person-badge-fill me-2 text-muted"></i>Nombre de Usuario
+                </label>
+                <input asp-for="NombreUsuario" class="form-control" placeholder="Tu nombre público..." required />
+                <span asp-validation-for="NombreUsuario" class="text-danger small fw-bold"></span>
+            </div>
+
+            <hr class="my-4 text-muted" />
+
+            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-shield-lock-fill me-2"></i>Datos Privados y Estadísticas</h5>
+
+            <div class="form-group">
+                <label asp-for="CorreoElectronico" class="form-label">Correo Electrónico</label>
+                <input asp-for="CorreoElectronico" class="form-control" readonly title="No puedes cambiar tu correo electrónico." />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ExperienciaTotal" class="form-label">
+                    <i class="bi bi-star-fill text-warning me-1"></i> Experiencia Total (XP)
+                </label>
+                <input asp-for="ExperienciaTotal" class="form-control fw-bold text-primary" readonly />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Miembro desde</label>
+                <input value="@Model.FechaRegistro.ToString("dd 'de' MMMM, yyyy")" class="form-control" readonly />
+                <input type="hidden" asp-for="FechaRegistro" />
+            </div>
+
+            <button type="submit" class="btn-save">
+                <i class="bi bi-check2-circle me-2"></i> Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function previewImage(event) {
+            var input = event.target;
+            var reader = new FileReader();
+
+            reader.onload = function(){
+                var dataURL = reader.result;
+                var preview = document.getElementById('preview');
+                var icon = document.getElementById('uploadIcon');
+
+                preview.src = dataURL;
+                preview.style.display = 'block';
+
+                // Si ya había una imagen y el icono estaba oculto, lo mantenemos oculto
+                if (icon) {
+                    icon.style.display = 'none';
+                }
+            };
+
+            if(input.files && input.files[0]){
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

@@ -127,6 +127,22 @@ namespace ProyectoDuolingoC_.Repositories
             await this.context.Curso.AddAsync(c);
             await this.context.SaveChangesAsync();
         }
+        public async Task UpdateCursoAsync(Curso cursoModificado)
+        {
+            Curso cursoOriginal = await this.context.Curso.FindAsync(cursoModificado.CursoID);
+
+            if (cursoOriginal != null)
+            {
+                cursoOriginal.Titulo = cursoModificado.Titulo;
+                cursoOriginal.EtiquetaLenguaje = cursoModificado.EtiquetaLenguaje;
+                cursoOriginal.Descripcion = cursoModificado.Descripcion;
+                if (cursoModificado.Imagen != null && cursoModificado.Imagen.Length > 0)
+                {
+                    cursoOriginal.Imagen = cursoModificado.Imagen;
+                }
+                await this.context.SaveChangesAsync();
+            }
+        }
 
         public async Task Delete(int id)
         {
@@ -148,7 +164,26 @@ namespace ProyectoDuolingoC_.Repositories
 
             return misCursos;
         }
+        public async Task<int> GetPrimeraLeccionCursoAsync(int idCurso)
+        {
+            var primeraLeccion = await this.context.Leccion
+                .Where(l => l.CursoID == idCurso)
+                .OrderBy(l => l.Orden) // Ordenamos de menor a mayor
+                .Select(l => l.LeccionID)  // Solo nos interesa traernos el número del ID, no toda la lección
+                .FirstOrDefaultAsync();
 
+            return primeraLeccion;
+        }
+        public async Task<int> GetSiguienteLeccionAsync(int idCurso, int idLeccionActual)
+        {
+            var siguienteLeccion = await this.context.Leccion
+                .Where(l => l.CursoID == idCurso && l.LeccionID > idLeccionActual) 
+                .OrderBy(l => l.Orden)
+                .Select(l => l.LeccionID)
+                .FirstOrDefaultAsync();
+
+            return siguienteLeccion;
+        }
 
     }
 }

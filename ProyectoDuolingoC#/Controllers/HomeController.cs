@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using ProyectoDuolingoC_.Models;
@@ -15,6 +16,7 @@ namespace ProyectoDuolingoC_.Controllers
 
         RepositoryLogIn repo;
         RepositoryCursos repoCursos;
+
         public HomeController(RepositoryLogIn repo, RepositoryCursos repoCursos)
         {
             this.repo = repo;
@@ -29,14 +31,43 @@ namespace ProyectoDuolingoC_.Controllers
 
         public async Task<IActionResult> Register()
         {
-            return View();
+            return View(new Usuario());
         }
         [HttpPost]
-        public async Task<IActionResult> Register(Usuario user, string pass)
+        public async Task<IActionResult> Register(Usuario user, string pass, IFormFile archivoImagen)
         {
+            if (archivoImagen != null && archivoImagen.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await archivoImagen.CopyToAsync(memoryStream);
+
+                    user.Imagen = memoryStream.ToArray();
+                }
+            }
             await this.repo.RegisterUsuario(user.NombreUsuario, user.CorreoElectronico, user.Imagen, user.Rol, pass);
             ViewData["MENSAJE"] = "Usuario en el sistema";
             return RedirectToAction("LogIn", new { email = user.CorreoElectronico, pass= pass});
+        }
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetFotoPerfil()
+        {
+            // Sacamos el ID del usuario de su sesión segura
+            int idUsu = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            // Buscamos al usuario en la base de datos
+            Usuario user = await this.repo.FindUsuarioByIDAsync(idUsu);
+
+            // Si tiene foto, la devolvemos como archivo de imagen
+            if (user != null && user.Imagen != null && user.Imagen.Length > 0)
+            {
+                return File(user.Imagen, "image/jpeg");
+            }
+
+            // Si no tiene foto, podemos devolver un avatar por defecto transparente de 1x1 píxel 
+            // o simplemente un null/NotFound para que el HTML muestre el icono de Bootstrap
+            return NotFound();
         }
         public async Task<IActionResult> LogIn()
         {
@@ -88,12 +119,7 @@ namespace ProyectoDuolingoC_.Controllers
             Usuario usu = await this.repo.FindUsuarioByIDAsync(int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
             return View(usu);
         }
-        public async Task<IActionResult> MisCursos()
-        {
-            List<CursoProgresoVM> curso = await this.repoCursos.GetMisCursosConProgreso(
-                int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
-            return View(curso);
-        }
+        
 
         [HttpGet]
         public IActionResult ErrorAcceso()
@@ -108,6 +134,52 @@ namespace ProyectoDuolingoC_.Controllers
             }
 
             return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize] // Imprescindible para que solo entren usuarios logueados
+        [HttpGet]
+        public async Task<IActionResult> Update()
+        {
+            // 1. Sacamos el ID del usuario directamente de su "carnet de identidad" (Claims)
+            string claimId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(claimId))
+            {
+                return RedirectToAction("LogIn", "Autenticacion");
+            }
+
+            // 2. Buscamos sus datos y se los mandamos a tu vista bonita
+            int idUsu = int.Parse(claimId);
+            Usuario user = await this.repo.FindUsuarioByIDAsync(idUsu);
+
+            return View(user);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Update(Usuario usuarioModificado, IFormFile imagenArchivo)
+        {
+            byte[] imagenBytes = null;
+            if (imagenArchivo != null && imagenArchivo.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await imagenArchivo.CopyToAsync(ms);
+                    imagenBytes = ms.ToArray();
+                }
+            }
+            int idLogueado = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (usuarioModificado.UsuarioID != idLogueado)
+            {
+                return RedirectToAction("LogIn", "Autenticacion");
+            }
+
+            await this.repo.UpdatePerfilAsync(usuarioModificado.UsuarioID, usuarioModificado.NombreUsuario, imagenBytes);
+            TempData["MENSAJE"] = "¡Perfil actualizado con éxito!";
+            TempData["TIPO_MENSAJE"] = "success";
+
+            return RedirectToAction("VerPerfil");
         }
 
 

@@ -2,6 +2,12 @@
 
 @{
     ViewData["Title"] = "Crear Cuenta";
+    bool tieneImagen = Model.Imagen != null && Model.Imagen.Length > 0;
+    string base64Image = "";
+    if (tieneImagen)
+    {
+        base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Imagen)}";
+    }
 }
 
 <style>
@@ -93,6 +99,43 @@
         .login-link:hover {
             text-decoration: underline;
         }
+    /* --- ESTILOS DE SUBIDA DE IMAGEN --- */
+    .image-upload-wrapper {
+        border: 2px dashed #ced4da;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        background-color: var(--input-bg);
+        transition: 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+
+        .image-upload-wrapper:hover {
+            border-color: var(--f-dark);
+            background-color: var(--f-selected-bg);
+        }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 10px;
+        display: none;
+        margin: 0 auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #adb5bd;
+        margin-bottom: 1rem;
+        transition: 0.3s;
+    }
+
+    .image-upload-wrapper:hover .upload-icon {
+        color: var(--f-dark);
+        transform: translateY(-5px);
+    }
 </style>
 
 <div class="register-container">
@@ -137,11 +180,30 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Foto de Perfil</label>
-                @* El nombre del input debe ser el que esperes en el Controller (ej: IFormFile imagenArchivo) *@
-                <input type="file" name="imagenArchivo" class="form-control" accept="image/*" />
-                <span class="text-muted small ms-1">Opcional: Sube un archivo JPG o PNG</span>
+            <div class="mb-4">
+                <label class="form-label fw-bold text-dark mb-3">
+                    <i class="bi bi-person-bounding-box me-2 text-muted"></i>Foto de Perfil
+                </label>
+
+                <div class="image-upload-wrapper" onclick="document.getElementById('imagenArchivo').click()">
+                    @if (tieneImagen)
+                    {
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon" id="uploadIcon" style="display: none;"></i>
+                        <img id="preview" class="image-preview" src="@base64Image" style="display: block; border-radius: 50%; max-width: 180px; aspect-ratio: 1/1; object-fit: cover;" alt="Vista previa" />
+                        <p class="mt-3 mb-0 fw-bold text-muted" id="uploadText">Haz clic para cambiar tu foto actual</p>
+                    }
+                    else
+                    {
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon" id="uploadIcon"></i>
+                        <img id="preview" class="image-preview" style="border-radius: 50%; max-width: 180px; aspect-ratio: 1/1; object-fit: cover;" alt="Vista previa" />
+                        <p class="mt-3 mb-0 fw-bold text-muted" id="uploadText">Haz clic para subir una nueva foto</p>
+                    }
+
+                    <input type="file" id="imagenArchivo" name="archivoImagen" style="display: none;" accept="image/*" onchange="previewImage(event)" />
+                </div>
+                <small class="text-muted mt-2 d-block text-center">
+                    <i class="bi bi-info-circle me-1"></i> Si no subes nada, se mantendrá tu avatar actual.
+                </small>
             </div>
 
             <button type="submit" class="btn btn-register-submit w-100">
@@ -160,5 +222,30 @@
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+            // Script para mostrar la vista previa de la imagen seleccionada
+            function previewImage(event) {
+                var input = event.target;
+                var reader = new FileReader();
+
+                reader.onload = function(){
+                    var dataURL = reader.result;
+                    var preview = document.getElementById('preview');
+                    var icon = document.getElementById('uploadIcon');
+                    var text = document.getElementById('uploadText');
+
+                    preview.src = dataURL;
+                    preview.style.display = 'block';
+
+                    // Ocultamos el icono y el texto original
+                    icon.style.display = 'none';
+                    text.textContent = 'Haz clic para cambiar la imagen';
+                };
+
+                if(input.files && input.files[0]){
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        </script>
     }
 }

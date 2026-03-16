@@ -206,9 +206,12 @@
     <div class="profile-card animate__animated animate__zoomIn">
 
         <div class="avatar-container">
-            @if (Model.Imagen != null)
+            @if (Model.Imagen != null && Model.Imagen.Length > 0)
             {
-                <img src="@Model.Imagen" alt="Foto de perfil" class="avatar-image" />
+                string base64String = Convert.ToBase64String(Model.Imagen);
+                string imageSrc = $"data:image/jpeg;base64,{base64String}";
+
+                <img src="@imageSrc" alt="Foto de perfil" class="avatar-image" />
             }
             else
             {
@@ -251,7 +254,7 @@
         </div>
 
         <div class="animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
-            <a asp-action="EditPerfil" asp-route-id="@Model.UsuarioID" class="btn-edit">
+            <a asp-action="Update" asp-route-id="@Model.UsuarioID" class="btn-edit">
                 <i class="bi bi-pencil-square"></i> Editar Perfil
             </a>
         </div>

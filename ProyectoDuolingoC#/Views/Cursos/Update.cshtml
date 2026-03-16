@@ -1,0 +1,272 @@
+﻿@model ProyectoDuolingoC_.Models.Curso
+
+@{
+    ViewData["Title"] = "Editar Curso";
+
+    // Lógica para saber si ya hay una imagen y prepararla para la vista previa
+    bool tieneImagen = Model.Imagen != null && Model.Imagen.Length > 0;
+    string base64Image = "";
+    if (tieneImagen)
+    {
+        base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(Model.Imagen)}";
+    }
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    /* Mantenemos exactamente tus mismos estilos */
+    :root {
+        --f-dark: #1a4332;
+        --f-dark-shadow: #0d2219;
+        --f-bg: #fdfdfd;
+        --border-color: #e5e5e5;
+        --input-bg: #f8f9fa;
+        --f-selected-bg: #eef3f0;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    .create-wrapper {
+        max-width: 750px;
+        margin: 3rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .form-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 30px;
+        padding: 3rem;
+        box-shadow: 0 15px 35px rgba(26, 67, 50, 0.05);
+    }
+
+    .page-title {
+        color: var(--f-dark);
+        font-weight: 900;
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .page-subtitle {
+        text-align: center;
+        color: #6c757d;
+        margin-bottom: 2.5rem;
+        font-size: 1.1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #3c3c3c;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control {
+        background-color: var(--input-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        font-family: 'Outfit', sans-serif;
+        color: #3c3c3c;
+        transition: 0.2s;
+        width: 100%;
+    }
+
+        .form-control:focus {
+            border-color: var(--f-dark);
+            background-color: white;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(26, 67, 50, 0.1);
+        }
+
+    .image-upload-wrapper {
+        border: 2px dashed #ced4da;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        background-color: var(--input-bg);
+        transition: 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+
+        .image-upload-wrapper:hover {
+            border-color: var(--f-dark);
+            background-color: var(--f-selected-bg);
+        }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 10px;
+        display: none;
+        margin: 0 auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #adb5bd;
+        margin-bottom: 1rem;
+        transition: 0.3s;
+    }
+
+    .image-upload-wrapper:hover .upload-icon {
+        color: var(--f-dark);
+        transform: translateY(-5px);
+    }
+
+    .btn-save {
+        background: var(--f-dark);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 1.2rem;
+        font-weight: 800;
+        font-size: 1.2rem;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 8px 0 var(--f-dark-shadow), 0 15px 20px rgba(26, 67, 50, 0.2);
+        margin-top: 2rem;
+        transition: 0.2s;
+    }
+
+        .btn-save:hover {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 var(--f-dark-shadow), 0 10px 15px rgba(26, 67, 50, 0.2);
+        }
+
+        .btn-save:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 transparent;
+        }
+
+    .btn-back {
+        color: #adb5bd;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+        transition: 0.2s;
+    }
+
+        .btn-back:hover {
+            color: var(--f-dark);
+            transform: translateX(-3px);
+        }
+</style>
+
+<div class="create-wrapper">
+    <div class="animate__animated animate__fadeInDown">
+        <a asp-action="Index" asp-controller="Home" class="btn-back">
+            <i class="bi bi-arrow-left-short fs-4"></i> Cancelar edición
+        </a>
+    </div>
+
+    <div class="form-card animate__animated animate__fadeInUp">
+        <h1 class="page-title">Editar Curso</h1>
+        <p class="page-subtitle">Actualiza los detalles de este programa de estudio.</p>
+
+        <form asp-action="Update" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="CursoID" />
+
+            <div class="form-group">
+                <label asp-for="Titulo" class="form-label">
+                    <i class="bi bi-journal-bookmark-fill me-2 text-muted"></i>Título del Curso
+                </label>
+                <input asp-for="Titulo" class="form-control" required />
+                <span asp-validation-for="Titulo" class="text-danger small fw-bold mt-1 d-block"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EtiquetaLenguaje" class="form-label">
+                    <i class="bi bi-tags-fill me-2 text-muted"></i>Etiqueta del Lenguaje
+                </label>
+                <input asp-for="EtiquetaLenguaje" class="form-control" required />
+                <span asp-validation-for="EtiquetaLenguaje" class="text-danger small fw-bold mt-1 d-block"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Descripcion" class="form-label">
+                    <i class="bi bi-card-text me-2 text-muted"></i>Descripción
+                </label>
+                <textarea asp-for="Descripcion" class="form-control" rows="4" required></textarea>
+                <span asp-validation-for="Descripcion" class="text-danger small fw-bold mt-1 d-block"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-image-fill me-2 text-muted"></i>Imagen de Portada
+                </label>
+
+                <div class="image-upload-wrapper" onclick="document.getElementById('archivoImagen').click()">
+                    @if (tieneImagen)
+                    {
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon" id="uploadIcon" style="display: none;"></i>
+                        <img id="preview" class="image-preview" src="@base64Image" style="display: block;" alt="Vista previa" />
+                        <p class="mt-2 mb-0 fw-bold text-muted" id="uploadText">Haz clic para cambiar la imagen actual</p>
+                    }
+                    else
+                    {
+                        <i class="bi bi-cloud-arrow-up-fill upload-icon" id="uploadIcon"></i>
+                        <img id="preview" class="image-preview" alt="Vista previa" />
+                        <p class="mt-2 mb-0 fw-bold text-muted" id="uploadText">Haz clic para subir una nueva imagen</p>
+                    }
+
+                    <input type="file" id="archivoImagen" name="archivoImagen" style="display: none;" accept="image/*" onchange="previewImage(event)" />
+                </div>
+                <small class="text-muted mt-2 d-block text-center"><i class="bi bi-info-circle me-1"></i> Si no seleccionas ninguna foto, se mantendrá la que ya tenías.</small>
+            </div>
+
+            <button type="submit" class="btn-save">
+                <i class="bi bi-check-circle-fill me-2"></i> Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function previewImage(event) {
+            var input = event.target;
+            var reader = new FileReader();
+
+            reader.onload = function(){
+                var dataURL = reader.result;
+                var preview = document.getElementById('preview');
+                var icon = document.getElementById('uploadIcon');
+                var text = document.getElementById('uploadText');
+
+                preview.src = dataURL;
+                preview.style.display = 'block';
+
+                icon.style.display = 'none';
+                text.textContent = 'Haz clic para cambiar la imagen';
+            };
+
+            if(input.files && input.files[0]){
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
