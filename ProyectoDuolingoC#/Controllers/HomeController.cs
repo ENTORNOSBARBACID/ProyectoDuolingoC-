@@ -85,12 +85,13 @@ namespace ProyectoDuolingoC_.Controllers
         }
         public async Task<IActionResult> VerPerfil()
         {
-            Usuario usu = await this.repo.FindUsuarioByIDAsync(HttpContext.Session.GetInt32("ID").Value);
+            Usuario usu = await this.repo.FindUsuarioByIDAsync(int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
             return View(usu);
         }
         public async Task<IActionResult> MisCursos()
         {
-            List<CursoProgresoVM> curso = await this.repoCursos.GetMisCursosConProgreso(HttpContext.Session.GetInt32("ID").Value);
+            List<CursoProgresoVM> curso = await this.repoCursos.GetMisCursosConProgreso(
+                int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value));
             return View(curso);
         }
 

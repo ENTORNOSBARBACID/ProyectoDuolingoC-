@@ -28,8 +28,12 @@ namespace ProyectoDuolingoC_.Controllers
             HttpContext.Session.Remove("PuntosXP");
             HttpContext.Session.Remove("IntentosTotales");
             HttpContext.Session.Remove("IntentosActuales");
-            int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            await this.repoLec.ImplementUsuarioProgreso(idUsu, leccionId);
+            if(HttpContext.User.FindFirst(ClaimTypes.Role).Value != "2")
+            {
+                int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                int idCurso = (await this.repoLec.VerContenido(leccionId)).CursoID;
+                await this.repoLec.ImplementUsuarioProgreso(idUsu, leccionId, idCurso);
+            }
             Leccion leccion = await this.repoLec.VerContenido(leccionId);
             return View(leccion);
         }
@@ -61,6 +65,7 @@ namespace ProyectoDuolingoC_.Controllers
             // 1. Sacamos los valores de la sesión
             int intentosActuales = HttpContext.Session.GetInt32("IntentosActuales") ?? 0;
             int puntosXP = HttpContext.Session.GetInt32("PuntosXP") ?? 0;
+            int puntosXPPregunta = HttpContext.Session.GetInt32("PuntosXPPregunta") ?? 0;
             int intentosTotales = HttpContext.Session.GetInt32("IntentosTotales") ?? 0;
 
             if (string.IsNullOrWhiteSpace(RespuestaAlumno))

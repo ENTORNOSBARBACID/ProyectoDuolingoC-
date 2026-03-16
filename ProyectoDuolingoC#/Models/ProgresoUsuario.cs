@@ -14,7 +14,10 @@ namespace ProyectoDuolingoC_.Models
         public int LeccionID { get; set; }
 
         [Column("FechaCompletado")]
+
         public DateTime FechaCompletado { get; set; }
+        [Column("CursoID")]
+        public int? CursoID { get; set; }
 
         [ForeignKey("UsuarioID")]
         public virtual Usuario Usuario { get; set; } = null!;

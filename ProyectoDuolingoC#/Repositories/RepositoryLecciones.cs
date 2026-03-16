@@ -25,10 +25,10 @@ namespace ProyectoDuolingoC_.Repositories
                            select datos;
             return await consulta.FirstOrDefaultAsync();
         }
-        public async Task<List<ProgresoUsuario>> VerProgresoUsuarioListAsync(int idUsu)
+        public async Task<List<ProgresoUsuario>> VerProgresoUsuarioListAsync(int idUsu, int idCur)
         {
             var consulta = from datos in this.context.ProgresoUsuario
-                           where datos.UsuarioID == idUsu
+                           where datos.UsuarioID == idUsu && datos.CursoID == idCur
                            select datos;
             return await consulta.ToListAsync();
         }
@@ -59,7 +59,7 @@ namespace ProyectoDuolingoC_.Repositories
 
             await this.context.SaveChangesAsync();
         }
-        public async Task ImplementUsuarioProgreso(int idUsu, int idLec)
+        public async Task ImplementUsuarioProgreso(int idUsu, int idLec, int idCur)
         {
             if(await VerProgresoUsuarioAsync(idUsu, idLec) == null)
             {
@@ -67,6 +67,7 @@ namespace ProyectoDuolingoC_.Repositories
                 {
                     UsuarioID = idUsu,
                     LeccionID = idLec,
+                    CursoID = idCur,
                     FechaCompletado = DateTime.Now
                 };
                 await this.context.ProgresoUsuario.AddAsync(usuP);

@@ -232,7 +232,7 @@
                     int idx = 1;
                     foreach (var leccion in lecciones)
                     {
-                        if (ViewData["CURSO"] is false && ViewData["LECCION"] != null && leccion.Orden <= (int)ViewData["LECCION"] )
+                        if (ViewData["CURSO"] is false && ViewData["LECCION"] != null && leccion.Orden <= (int)ViewData["LECCION"]  )
                         {
                             <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID" class="lesson-strip animate__animated animate__fadeInLeft"
                                style="animation-delay: @(0.4 + (idx * 0.1))s">

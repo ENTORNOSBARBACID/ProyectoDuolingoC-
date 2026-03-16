@@ -28,21 +28,32 @@ namespace ProyectoDuolingoC_.Controllers
             List<Leccion> lec = await this.repoLec.LoadLecciones(id);
             ViewData["LECCIONES"] = lec;
 
-            int? idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (idUsu != null)
             {
-                CursosUsuario cursosUsuario = await this.repo.VerCursousuarioAsync(id, idUsu.Value);
-                List<ProgresoUsuario> progreso = await this.repoLec.VerProgresoUsuarioListAsync(idUsu.Value);
+                CursosUsuario cursosUsuario = await this.repo.VerCursousuarioAsync(id, idUsu);
+                List<ProgresoUsuario> progreso = await this.repoLec.VerProgresoUsuarioListAsync(idUsu, id);
                 if(progreso != null && progreso.Any())
                 {
-                    ViewData["LECCION"] = progreso.Last().LeccionID ;
+                    ViewData["LECCION"] = progreso.Count() + 1;
+                }
+                else if (HttpContext.User.FindFirst(ClaimTypes.Role).Value == "2")
+                {
+                    ViewData["LECCION"] = lec.Count() + 1;
                 }
                 else
                 {
-                    ViewData["LECCION"] = 3;
+                    ViewData["LECCION"] = 1;
                 }
-                ViewData["CURSO"] = cursosUsuario == null;
+                if(HttpContext.User.FindFirst(ClaimTypes.Role).Value != "2")
+                {
+                    ViewData["CURSO"] = cursosUsuario == null;
+                }
+                else
+                {
+                    ViewData["CURSO"] = false;
+                }
             }
             else
             {
@@ -54,7 +65,7 @@ namespace ProyectoDuolingoC_.Controllers
         [Authorize(policy:"SOLOESTUDIANTES")]
         public async Task<IActionResult> Inscribirse(int id)
         {
-            int? idUsu = HttpContext.Session.GetInt32("ID");
+            int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             if (idUsu == null)
             {
@@ -65,7 +76,7 @@ namespace ProyectoDuolingoC_.Controllers
             }
 
             
-            await this.repo.Inscribirse(id, idUsu.Value);
+            await this.repo.Inscribirse(id, idUsu);
             
             TempData["Titulo"] = "¡Genial!";
             TempData["Mensaje"] = "Te has inscrito al curso correctamente.";

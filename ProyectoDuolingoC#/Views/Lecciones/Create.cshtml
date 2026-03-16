@@ -153,12 +153,14 @@
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="CursoID" class="control-label">ID del Curso (Automático)</label>
-                                <input asp-for="CursoID" class="form-control custom-input" value="@ViewData["CURSOID"]" readonly />
-                                <span asp-validation-for="CursoID" class="text-danger small fw-bold"></span>
+                                <label class="control-label">Nombre del Curso</label>
+                                <input class="form-control custom-input" value="@ViewData["NOMBRECURSO"]" readonly />
+                                <span class="text-danger small fw-bold"></span>
                             </div>
                         </div>
                     </div>
+
+                    <input type="hidden" asp-for="CursoID" value="@ViewData["CURSOID"]" />
 
                     <div class="form-group">
                         <label asp-for="Titulo" class="control-label">Título de la Lección</label>
