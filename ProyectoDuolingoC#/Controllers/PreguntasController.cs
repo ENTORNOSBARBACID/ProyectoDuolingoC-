@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProyectoDuolingoC_.Models;
 using ProyectoDuolingoC_.Repositories;
+using System.Security.Claims;
 
 namespace ProyectoDuolingoC_.Controllers
 {
@@ -16,11 +17,19 @@ namespace ProyectoDuolingoC_.Controllers
         public async Task<IActionResult> Menu(int id)
         {
             List<Pregunta> preg = await this.repo.VerPregunta(id);
+            ViewData["LECCIONID"]=id;
             return View(preg);
         }
         public async Task<IActionResult> Victoria(int leccionId)
         {
+            ViewData["Puntos"] = HttpContext.Session.GetInt32("PuntosXP") ?? 0;
+            ViewData["Intentos"] = HttpContext.Session.GetInt32("IntentosTotales") ?? 0;
 
+            HttpContext.Session.Remove("PuntosXP");
+            HttpContext.Session.Remove("IntentosTotales");
+            HttpContext.Session.Remove("IntentosActuales");
+            int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await this.repoLec.ImplementUsuarioProgreso(idUsu, leccionId);
             Leccion leccion = await this.repoLec.VerContenido(leccionId);
             return View(leccion);
         }
@@ -42,11 +51,18 @@ namespace ProyectoDuolingoC_.Controllers
             ViewData["TOTAL_PREGUNTAS"] = preguntas.Count;
             ViewData["PROGRESO_PORCENTAJE"] = (int)((double)index / preguntas.Count * 100);
 
+            HttpContext.Session.SetInt32("IntentosActuales", 0);
+
             return View(preguntaActual);
         }
         [HttpPost]
         public async Task<IActionResult> VerificarRespuesta(int PreguntaID, string RespuestaAlumno, int IndexActual, int LeccionID)
         {
+            // 1. Sacamos los valores de la sesión
+            int intentosActuales = HttpContext.Session.GetInt32("IntentosActuales") ?? 0;
+            int puntosXP = HttpContext.Session.GetInt32("PuntosXP") ?? 0;
+            int intentosTotales = HttpContext.Session.GetInt32("IntentosTotales") ?? 0;
+
             if (string.IsNullOrWhiteSpace(RespuestaAlumno))
             {
                 TempData["MENSAJE"] = "Por favor, selecciona o escribe una respuesta.";
@@ -55,7 +71,6 @@ namespace ProyectoDuolingoC_.Controllers
             }
 
             Pregunta pregunta = await this.repo.VerPreguntaPorId(PreguntaID);
-
             bool esAcierto = false;
 
             if (pregunta.TipoPregunta == "CompletarCodigo" || pregunta.TipoPregunta == "VerdaderoFalso")
@@ -81,6 +96,16 @@ namespace ProyectoDuolingoC_.Controllers
 
             if (esAcierto)
             {
+                if (intentosActuales > 0)
+                {
+                    puntosXP += (int)Math.Round((double)pregunta.PuntosXP / intentosActuales);
+                }
+                else
+                {
+                    puntosXP += pregunta.PuntosXP;
+                }
+                HttpContext.Session.SetInt32("PuntosXP", puntosXP);
+
                 return RedirectToAction("Preguntas", new { id = LeccionID, index = IndexActual + 1 });
             }
             else
@@ -88,12 +113,19 @@ namespace ProyectoDuolingoC_.Controllers
                 TempData["MENSAJE"] = "Respuesta incorrecta. ¡Piénsalo bien e inténtalo de nuevo!";
                 TempData["TIPO_MENSAJE"] = "error";
 
+                intentosActuales++;
+                intentosTotales++;
+
+                HttpContext.Session.SetInt32("IntentosActuales", intentosActuales);
+                HttpContext.Session.SetInt32("IntentosTotales", intentosTotales);
+
                 return RedirectToAction("Preguntas", new { id = LeccionID, index = IndexActual });
             }
         }
         public async Task<IActionResult> VerPreguntas(int idLec)
         {
             List<Pregunta> preg = await this.repo.VerPreguntasPorLeccion(idLec);
+            ViewData["LECCIONID"] = idLec;
             return View(preg);
         }
         public async Task<IActionResult> Update(int id)

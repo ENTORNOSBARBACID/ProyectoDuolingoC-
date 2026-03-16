@@ -4,13 +4,13 @@
     ViewData["Title"] = "Lista de Preguntas";
 
     // Intentamos sacar el LeccionID de la primera pregunta.
-    int? leccionId = Model?.FirstOrDefault()?.LeccionID ?? ViewData["LeccionID"] as int?;
+    // Si la lista está vacía, idealmente deberías pasar el ViewData["LeccionID"] desde tu controlador.
+    int? leccionId = ViewData["LeccionID"] as int?;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     :root {
@@ -40,15 +40,17 @@
         text-align: center;
     }
 
-    /* --- TARJETA DE PREGUNTA (Ahora es un div) --- */
+    /* --- TARJETA DE PREGUNTA --- */
     .pregunta-card {
         display: flex;
         align-items: center;
         background: white;
         border: 2px solid var(--border-color);
         border-radius: 20px;
-        padding: 1rem 1.5rem;
+        padding: 1.2rem 1.5rem;
         margin-bottom: 1rem;
+        text-decoration: none;
+        color: #3c3c3c;
         transition: all 0.2s ease-in-out;
         gap: 1rem;
     }
@@ -57,18 +59,8 @@
             border-color: var(--f-dark);
             transform: translateY(-3px);
             box-shadow: 0 10px 20px rgba(26, 67, 50, 0.1);
+            color: #3c3c3c;
         }
-
-    /* Enlace invisible para la parte de editar */
-    .pregunta-edit-link {
-        display: flex;
-        align-items: center;
-        flex-grow: 1;
-        text-decoration: none;
-        color: #3c3c3c;
-        overflow: hidden;
-        gap: 1rem;
-    }
 
     /* --- ICONO Y CONTENIDO --- */
     .icon-circle {
@@ -89,38 +81,32 @@
         overflow: hidden;
     }
 
+    .pregunta-titulo {
+        font-weight: 800;
+        font-size: 1.2rem;
+        margin-bottom: 0.2rem;
+        color: var(--f-dark);
+    }
+
     .pregunta-texto {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         color: #6c757d;
-        font-size: 1.05rem;
-        font-weight: 600;
+        font-size: 0.95rem;
         margin: 0;
     }
 
-    /* --- BOTÓN ELIMINAR PREGUNTA --- */
-    .btn-delete-q {
-        background: #fff0f0;
-        color: #ff4b4b;
-        border: none;
-        border-radius: 12px;
-        width: 45px;
-        height: 45px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
+    .arrow-icon {
+        color: #adb5bd;
+        font-size: 1.5rem;
         transition: 0.2s;
-        cursor: pointer;
-        flex-shrink: 0;
     }
 
-        .btn-delete-q:hover {
-            background: #ff4b4b;
-            color: white;
-            transform: scale(1.05);
-        }
+    .pregunta-card:hover .arrow-icon {
+        color: var(--f-dark);
+        transform: translateX(5px);
+    }
 
     /* --- BOTÓN AÑADIR (Estilo 3D) --- */
     .btn-add {
@@ -156,30 +142,31 @@
         }
 
     .btn-return {
-        color: #adb5bd;
+        color: var(--f-dark);
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        font-weight: 700;
+        font-weight: 600;
         transition: 0.3s;
-        margin-bottom: 2rem;
+        margin-top: 2rem;
+        margin-left: 2rem;
+        opacity: 0.7;
     }
 
         .btn-return:hover {
-            color: var(--f-dark);
+            opacity: 1;
             transform: translateX(-5px);
         }
 </style>
 
 <div class="preguntas-wrapper">
+    <h1 class="page-title animate__animated animate__fadeInDown">Gestión de Preguntas</h1><br />
     <div class="animate__animated animate__fadeInDown">
-        <a asp-controller="Preguntas" asp-action="Menu" asp-route-id="@leccionId" class="btn-return">
-            <i class="bi bi-arrow-left-short fs-3"></i> Volver al menú
+        <a asp-action="Menu" asp-route-id="@leccionId" class="btn-return animate__animated animate__fadeIn">
+            <i class="bi bi-arrow-left-short fs-4"></i> Volver al menu
         </a>
     </div>
-
-    <h1 class="page-title animate__animated animate__fadeInDown">Gestión de Preguntas</h1>
 
     <div class="preguntas-list">
         @if (Model != null && Model.Any())
@@ -187,25 +174,19 @@
             int idx = 1;
             foreach (var pregunta in Model)
             {
-                <div class="pregunta-card animate__animated animate__fadeInUp" style="animation-delay: @(idx * 0.1)s;">
+                <a asp-action="Update" asp-route-id="@pregunta.PreguntaID" class="pregunta-card animate__animated animate__fadeInUp" style="animation-delay: @(idx * 0.1)s;">
 
-                    <a asp-action="Update" asp-route-id="@pregunta.PreguntaID" class="pregunta-edit-link" title="Editar pregunta">
-                        <div class="icon-circle">
-                            <i class="bi bi-patch-question-fill"></i>
-                        </div>
-                        <div class="pregunta-info">
-                            <p class="pregunta-texto">@pregunta.TextoPregunta</p>
-                        </div>
-                    </a>
+                    <div class="icon-circle">
+                        <i class="bi bi-patch-question-fill"></i>
+                    </div>
 
-                    <form asp-action="Delete" method="post" onsubmit="confirmarBorradoPregunta(event, this)">
-                        <input type="hidden" name="id" value="@pregunta.PreguntaID" />
-                        <button type="submit" class="btn-delete-q" title="Borrar Pregunta">
-                            <i class="bi bi-trash-fill"></i>
-                        </button>
-                    </form>
+                    <div class="pregunta-info">
+                        <p class="pregunta-texto">@pregunta.TextoPregunta</p>
+                    </div>
 
-                </div>
+                    <i class="bi bi-chevron-right arrow-icon"></i>
+                </a>
+
                 idx++;
             }
         }
@@ -222,30 +203,3 @@
     </a>
 
 </div>
-
-@section Scripts {
-    <script>
-        function confirmarBorradoPregunta(event, form) {
-            event.preventDefault(); // Evitamos que se envíe de inmediato
-
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Se eliminará esta pregunta y todas sus opciones. Esta acción no se puede deshacer.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ff4b4b',
-                cancelButtonColor: '#1a4332',
-                confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, borrar',
-                cancelButtonText: 'Cancelar',
-                reverseButtons: true,
-                customClass: {
-                    popup: 'rounded-4'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
-        }
-    </script>
-}

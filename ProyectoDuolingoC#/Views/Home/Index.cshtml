@@ -141,6 +141,22 @@
             color: white;
             transform: scale(1.02);
         }
+    /* --- ICONOS DE ACCIÓN (EDITAR/BORRAR) --- */
+    .action-icon {
+        color: #adb5bd;
+        transition: 0.2s ease-in-out;
+        display: inline-flex;
+    }
+
+        .action-icon.edit:hover {
+            color: var(--forest-accent); /* Tu verde bosque */
+            transform: scale(1.15) translateY(-2px);
+        }
+
+        .action-icon.delete:hover {
+            color: #ff4b4b; /* Rojo para borrar */
+            transform: scale(1.15) translateY(-2px);
+        }
 
     /* Corrección para Responsive en Razor (usar doble @@) */
     @@media (max-width: 768px) {
@@ -173,9 +189,28 @@
         {
             <div class="col-md-6 col-lg-4 course-item">
                 <div class="course-card">
+
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="course-badge">@curso.EtiquetaLenguaje</span>
-                        <i class="bi bi-bookmark text-muted"></i>
+
+                        <div class="d-flex gap-2 align-items-center">
+
+                            @* Mostramos los botones solo si el usuario logueado es Administrador (Rol 2) *@
+                            @if (Context.User.IsInRole("2"))
+                            {
+                                <a asp-action="Update" asp-controller="Cursos" asp-route-id="@curso.CursoID" class="action-icon edit" title="Editar curso">
+                                    <i class="bi bi-pencil-square fs-5"></i>
+                                </a>
+                                <a href="javascript:void(0)" onclick="confirmarBorrado('@Url.Action("Delete", "Cursos", new { id = curso.CursoID })')" class="action-icon delete" title="Eliminar curso">
+                                    <i class="bi bi-trash-fill fs-5"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                /* Si es alumno, le seguimos mostrando el marcador decorativo */
+                                <i class="bi bi-bookmark text-muted fs-5"></i>
+                            }
+                        </div>
                     </div>
 
                     <h3 class="fw-bold h4 mb-3">@curso.Titulo</h3>
@@ -203,13 +238,16 @@
             <p class="text-muted mt-2">Vaya, parece que no hay cursos todavía...</p>
         </div>
     }
-
+    @if (Context.User.IsInRole("2"))
+    {
+        
     <div class="col-md-6 col-lg-4">
         <a asp-action="Create" asp-controller="Cursos" class="course-card add-course-card">
             <i class="bi bi-plus-circle text-muted" style="font-size: 4rem; margin-bottom: 1rem;"></i>
             <h3 class="fw-bold h5 text-muted mb-0">Añadir nuevo curso</h3>
         </a>
     </div>
+    }
 </div>
 
 @section Scripts {
@@ -224,5 +262,21 @@
                 item.style.display = text.includes(filter) ? "block" : "none";
             });
         });
+    
+        function confirmarBorrado(urlDelete) {
+            Swal.fire({
+                title: '¿Estás completamente seguro?',
+                text: "¡Peligro! Se borrarán todas las lecciones, preguntas y el progreso de los alumnos. Esta acción NO se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e63946', // Un rojo intenso para la acción destructiva
+                cancelButtonColor: '#1a4332',  // Tu verde bosque para el botón seguro
+                confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, eliminar todo',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    popup: 'rounded-4'
+                }
+            });
+        }
     </script>
 }

@@ -1,13 +1,40 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ProyectoDuolingoC_.Data;
 using ProyectoDuolingoC_.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SOLOADMIN",
+        policy => policy.RequireRole("2"));
+    options.AddPolicy("SOLOESTUDIANTES",
+        policy => policy.RequireRole("1"));
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthentication
+    (
+        options =>
+        {
+            options.DefaultAuthenticateScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme =
+            CookieAuthenticationDefaults.AuthenticationScheme;
+        }
+    ).AddCookie(
+        CookieAuthenticationDefaults.AuthenticationScheme,
+        config =>
+        {
+            config.AccessDeniedPath = "/Home/ErrorAcceso";
+        }
+    );
 
 
 string connectionString = builder.Configuration.GetConnectionString("SqlProyecto");
@@ -28,7 +55,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
 
