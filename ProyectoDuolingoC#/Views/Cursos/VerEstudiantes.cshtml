@@ -1,9 +1,11 @@
-﻿@* Asumo que le pasarás una lista de un ViewModel que contenga al estudiante y sus cursos. 
-   Ajusta el nombre del modelo al que tengas creado *@
-@model IEnumerable<ProyectoDuolingoC_.Models.EstudianteAdminVM>
+﻿@model IEnumerable<ProyectoDuolingoC_.Models.EstudianteAdminVM>
 
 @{
-    ViewData["Title"] = "Gestión de Estudiantes";
+    ViewData["Title"] = "Gestión de Usuarios";
+
+    // Separamos la lista en dos grupos para mayor comodidad en el HTML
+    var estudiantes = Model.Where(u => u.Rol == 1).ToList();
+    var administradores = Model.Where(u => u.Rol == 2).ToList();
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -31,7 +33,7 @@
         box-shadow: 0 10px 20px rgba(26, 67, 50, 0.15);
     }
 
-    /* Estilos del Acordeón personalizado */
+    /* --- Estilos del Acordeón (Estudiantes) --- */
     .custom-accordion .accordion-item {
         border: none;
         border-radius: 15px;
@@ -48,11 +50,25 @@
         box-shadow: none !important;
     }
 
-    .custom-accordion .accordion-button:not(.collapsed) {
-        background-color: #eef3f0;
-        color: var(--forest-base);
+        .custom-accordion .accordion-button:not(.collapsed) {
+            background-color: #eef3f0;
+            color: var(--forest-base);
+        }
+
+    /* --- Estilos de las Tarjetas de Admin --- */
+    .admin-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-bottom: 1rem;
+        border-left: 5px solid #ffc107; /* Borde amarillo para distinguirlos */
     }
 
+    /* --- Avatares --- */
     .student-avatar {
         width: 50px;
         height: 50px;
@@ -61,7 +77,11 @@
         border: 2px solid var(--forest-accent);
     }
 
-    /* Estilos de la lista de cursos interna */
+    .admin-avatar {
+        border-color: #ffc107; /* Borde amarillo para administradores */
+    }
+
+    /* --- Lista Interna de Cursos --- */
     .course-list-item {
         display: flex;
         align-items: center;
@@ -71,13 +91,13 @@
         transition: 0.2s;
     }
 
-    .course-list-item:last-child {
-        border-bottom: none;
-    }
+        .course-list-item:last-child {
+            border-bottom: none;
+        }
 
-    .course-list-item:hover {
-        background-color: #fcfcfc;
-    }
+        .course-list-item:hover {
+            background-color: #fcfcfc;
+        }
 
     .progress-mini {
         height: 8px;
@@ -103,98 +123,137 @@
         transition: 0.2s;
     }
 
-    .btn-remove:hover {
-        background-color: #dc3545;
-        color: #fff;
-    }
+        .btn-remove:hover {
+            background-color: #dc3545;
+            color: #fff;
+        }
 </style>
 
 <div class="container mt-4">
     <div class="admin-header text-center">
-        <h1 class="fw-bold mb-2"><i class="bi bi-people-fill me-2"></i>Gestión de Estudiantes</h1>
-        <p class="opacity-75 mb-0">Supervisa el progreso y administra las matrículas de los alumnos.</p>
+        <h1 class="fw-bold mb-2"><i class="bi bi-people-fill me-2"></i>Gestión de Usuarios</h1>
+        <p class="opacity-75 mb-0">Supervisa a tus estudiantes y a tu equipo de administradores.</p>
     </div>
 
-    @if (Model != null && Model.Any())
-    {
-        <div class="accordion custom-accordion" id="accordionEstudiantes">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-mortarboard-fill text-success me-2"></i>Estudiantes</h3>
 
-            @foreach (var estudiante in Model)
+            @if (estudiantes.Any())
             {
-                string collapseId = $"collapse-{estudiante.UsuarioID}";
-                string headingId = $"heading-{estudiante.UsuarioID}";
+                <div class="accordion custom-accordion" id="accordionEstudiantes">
+                    @foreach (var estudiante in estudiantes)
+                    {
+                        string collapseId = $"collapse-{estudiante.UsuarioID}";
+                        string headingId = $"heading-{estudiante.UsuarioID}";
 
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="@headingId">
-                        <button class="accordion-button collapsed d-flex align-items-center gap-3" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="@headingId">
+                                <button class="accordion-button collapsed d-flex align-items-center gap-3" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
 
-                            @if (estudiante.Imagen != null && estudiante.Imagen.Length > 0)
-                            {
-                                string base64 = Convert.ToBase64String(estudiante.Imagen);
-                                <img src="data:image/jpeg;base64,@base64" class="student-avatar" alt="Avatar" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-person-circle text-muted" style="font-size: 50px; line-height: 1;"></i>
-                            }
+                                    @if (estudiante.Imagen != null && estudiante.Imagen.Length > 0)
+                                    {
+                                        string base64 = Convert.ToBase64String(estudiante.Imagen);
+                                        <img src="data:image/jpeg;base64,@base64" class="student-avatar" alt="Avatar" />
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-person-circle text-muted" style="font-size: 50px; line-height: 1;"></i>
+                                    }
 
-                            <div>
-                                <h5 class="mb-0 fw-bold">@estudiante.NombreUsuario</h5>
-                                <small class="text-muted">@estudiante.CorreoElectronico</small>
-                            </div>
-                        </button>
-                    </h2>
+                                    <div>
+                                        <h5 class="mb-0 fw-bold">@estudiante.NombreUsuario</h5>
+                                        <small class="text-muted">@estudiante.CorreoElectronico</small>
+                                    </div>
+                                </button>
+                            </h2>
 
-                    <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#accordionEstudiantes">
-                        <div class="accordion-body p-0">
-
-                            @if (estudiante.CursosInscritos != null && estudiante.CursosInscritos.Any())
-                            {
-                                <div class="p-3 bg-light border-bottom">
-                                    <h6 class="fw-bold mb-0 text-muted"><i class="bi bi-journal-bookmark-fill me-2"></i>Cursos en curso:</h6>
-                                </div>
-
-                                @foreach (var curso in estudiante.CursosInscritos)
-                                {
-                                    <div class="course-list-item">
-                                        <div>
-                                            <span class="fw-bold d-block text-dark">@curso.Titulo</span>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <small class="text-muted fw-bold">@curso.PorcentajeProgreso%</small>
-                                                <div class="progress-mini">
-                                                    <div class="progress-mini-fill" style="width: @curso.PorcentajeProgreso%;"></div>
-                                                </div>
-                                            </div>
+                            <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#accordionEstudiantes">
+                                <div class="accordion-body p-0">
+                                    @if (estudiante.CursosInscritos != null && estudiante.CursosInscritos.Any())
+                                    {
+                                        <div class="p-3 bg-light border-bottom">
+                                            <h6 class="fw-bold mb-0 text-muted"><i class="bi bi-journal-bookmark-fill me-2"></i>Cursos en curso:</h6>
                                         </div>
 
-                                        <button type="button" class="btn-remove" onclick="confirmarEliminacion(@estudiante.UsuarioID, @curso.CursoID, '@curso.Titulo', '@estudiante.NombreUsuario')">
-                                            <i class="bi bi-trash3-fill"></i> Expulsar
-                                        </button>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="p-4 text-center text-muted">
-                                    <i class="bi bi-emoji-frown fs-3 d-block mb-2"></i>
-                                    Este estudiante aún no se ha matriculado en ningún curso.
+                                        @foreach (var curso in estudiante.CursosInscritos)
+                                        {
+                                            <div class="course-list-item">
+                                                <div>
+                                                    <span class="fw-bold d-block text-dark">@curso.Titulo</span>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <small class="text-muted fw-bold">@curso.PorcentajeProgreso%</small>
+                                                        <div class="progress-mini">
+                                                            <div class="progress-mini-fill" style="width: @curso.PorcentajeProgreso%;"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <button type="button" class="btn-remove" onclick="confirmarEliminacion(@estudiante.UsuarioID, @curso.CursoID, '@curso.Titulo', '@estudiante.NombreUsuario')">
+                                                    <i class="bi bi-trash3-fill"></i> Expulsar
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="p-4 text-center text-muted">
+                                            <i class="bi bi-emoji-frown fs-3 d-block mb-2"></i>
+                                            Este estudiante aún no se ha matriculado en ningún curso.
+                                        </div>
+                                    }
                                 </div>
-                            }
+                            </div>
                         </div>
-                    </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 bg-white rounded-3 shadow-sm border">
+                    <p class="text-muted mb-0">No hay estudiantes registrados.</p>
                 </div>
             }
         </div>
-    }
-    else
-    {
-        <div class="text-center py-5">
-            <h3 class="text-muted">No hay estudiantes registrados.</h3>
+
+        <div class="col-lg-4 mb-4">
+            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Administradores</h3>
+
+            @if (administradores.Any())
+            {
+                @foreach (var admin in administradores)
+                {
+                    <div class="admin-card">
+                        @if (admin.Imagen != null && admin.Imagen.Length > 0)
+                        {
+                            string base64 = Convert.ToBase64String(admin.Imagen);
+                            <img src="data:image/jpeg;base64,@base64" class="student-avatar admin-avatar" alt="Avatar" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-person-badge-fill text-warning" style="font-size: 40px; line-height: 1;"></i>
+                        }
+
+                        <div>
+                            <h6 class="mb-0 fw-bold text-dark">@admin.NombreUsuario</h6>
+                            <small class="text-muted d-block">@admin.CorreoElectronico</small>
+                            <span class="badge bg-warning text-dark mt-1" style="font-size: 0.7rem;">ADMINISTRADOR</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-4 bg-white rounded-3 shadow-sm border">
+                    <p class="text-muted mb-0">No hay otros administradores.</p>
+                </div>
+            }
         </div>
-    }
+    </div>
 </div>
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function confirmarEliminacion(idUsuario, idCurso, nombreCurso, nombreEstudiante) {
             Swal.fire({
@@ -208,7 +267,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `/Admin/ExpulsarEstudiante?idUsuario=${idUsuario}&idCurso=${idCurso}`;
+                    window.location.href = `/Cursos/ExpulsarEstudiante?idUsuario=${idUsuario}&idCurso=${idCurso}`;
                 }
             })
         }

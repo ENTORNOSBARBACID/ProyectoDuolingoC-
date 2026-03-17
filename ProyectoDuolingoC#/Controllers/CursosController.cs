@@ -192,5 +192,10 @@ namespace ProyectoDuolingoC_.Controllers
             return View(listaEstudiantes);
         }
 
+        public async Task<IActionResult> ExpulsarEstudiante(int idUsuario, int idCurso)
+        {
+           return RedirectToAction("VerEstudiantes");
+        }
+
     }
 }

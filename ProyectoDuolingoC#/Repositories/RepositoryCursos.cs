@@ -302,7 +302,7 @@ namespace ProyectoDuolingoC_.Repositories
                     NombreUsuario = grupo.First().NombreUsuario,
                     CorreoElectronico = grupo.First().CorreoElectronico,
                     Imagen = grupo.First().Imagen,
-
+                    Rol = grupo.First().Rol,
                     CursosInscritos = grupo
                         .Where(x => x.CursoID != null)
                         .Select(x => new CursoProgresoVM
