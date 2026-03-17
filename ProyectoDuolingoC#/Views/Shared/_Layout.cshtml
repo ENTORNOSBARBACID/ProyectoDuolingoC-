@@ -217,8 +217,8 @@
                         @if (User.HasClaim(ClaimTypes.Role, "2"))
                             {
                             <li>
-                                <a asp-controller="Home" asp-action="VerEstudiantes"
-                                   class="@(controller == "Home" && action == "VerEstudiantes" ? "active-link" : "")">
+                                <a asp-controller="Cursos" asp-action="VerEstudiantes"
+                                   class="@(controller == "Cursos" && action == "VerEstudiantes" ? "active-link" : "")">
                                     <i class="bi bi-journal-check"></i>
                                     <span>Estudiantes</span>
                                 </a>

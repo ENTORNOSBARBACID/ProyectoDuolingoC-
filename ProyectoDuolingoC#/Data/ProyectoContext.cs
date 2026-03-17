@@ -16,6 +16,7 @@ namespace ProyectoDuolingoC_.Data
         public DbSet<ProgresoUsuario> ProgresoUsuario { get; set; }
         public DbSet<CursosUsuario> CursosUsuarios { get; set; }
         public DbSet<CursoProgresoVM> CursosConProgreso { get; set; }
+        public DbSet<EstudiantePlano> VistaEstudiantesCursos { get; set; }
         public DbSet<Ranking> Ranking { get; set; }
 
 
@@ -26,6 +27,9 @@ namespace ProyectoDuolingoC_.Data
                 .HasKey(pu => new { pu.UsuarioID, pu.LeccionID });
             modelBuilder.Entity<CursosUsuario>()
                 .HasKey(pu => new { pu.UsuarioID, pu.CursoID });
+            modelBuilder.Entity<EstudiantePlano>()
+                .HasNoKey()
+                .ToView("VW_Admin_EstudiantesProgreso");
 
             // 2. Mapeo de nombres de tablas (SOLO SI TE DA ERROR DE "INVALID OBJECT NAME")
             modelBuilder.Entity<Usuario>().ToTable("Usuarios");

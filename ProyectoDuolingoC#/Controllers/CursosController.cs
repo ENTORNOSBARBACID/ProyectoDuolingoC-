@@ -147,34 +147,49 @@ namespace ProyectoDuolingoC_.Controllers
             return View(curso);
         }
 
-        [Authorize(Policy = "SOLOESTUDIANTES")]
-        public async Task<IActionResult> ContinuarAvanzando(int idCurso)
-        {
-            int idUsuario = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            ProgresoUsuario ultimoProgreso = await this.repoLec.VerProgresoUsuarioLastAsync(idUsuario, idCurso);
-
-            int idLeccionDestino = 0;
-
-            if (ultimoProgreso == null)
+            [Authorize(Policy = "SOLOESTUDIANTES")]
+            public async Task<IActionResult> ContinuarAvanzando(int idCurso)
             {
-                // CASO A: No ha empezado el curso. 
-                // Vamos a buscar la ID de la primera lección del curso.
-                idLeccionDestino = await this.repo.GetPrimeraLeccionCursoAsync(idCurso);
-            }
-            else
-            {
-                idLeccionDestino = await this.repo.GetSiguienteLeccionAsync(idCurso, ultimoProgreso.LeccionID);
+                int idUsuario = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-                if (idLeccionDestino == 0)
+                ProgresoUsuario ultimoProgreso = await this.repoLec.VerProgresoUsuarioLastAsync(idUsuario, idCurso);
+                List<Leccion> lec = await this.repoLec.LoadLecciones(idCurso);
+
+                int idLeccionDestino = 0;
+                if (lec != null && lec.Any())
                 {
-                    TempData["Titulo"] = "¡Curso Completado!";
-                    TempData["Mensaje"] = "¡Enhorabuena! Apúntate a otros cursos para seguir aprendiendo.";
-                    TempData["Icono"] = "success"; 
-                    return RedirectToAction("Index", "Home");
+
+                    if (ultimoProgreso == null)
+                    {
+
+                        idLeccionDestino = await this.repo.GetPrimeraLeccionCursoAsync(idCurso);
+                    }
+                    else
+                    {
+                        idLeccionDestino = await this.repo.GetSiguienteLeccionAsync(idCurso, ultimoProgreso.LeccionID);
+
+                        if (idLeccionDestino == 0)
+                        {
+                            TempData["Titulo"] = "¡Curso Completado!";
+                            TempData["Mensaje"] = "¡Enhorabuena! Apúntate a otros cursos para seguir aprendiendo.";
+                            TempData["Icono"] = "success"; 
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                    return RedirectToAction("Index", "Lecciones", new { id = idLeccionDestino });
                 }
+                else
+                {
+                    TempData["Titulo"] = "No hay cursos disponibles todavia...";
+                    TempData["Mensaje"] = "¡Espera paciente! Pronto publicaremos las lecciones de este curso.";
+                    TempData["Icono"] = "error";
+                    return RedirectToAction("MisCursos", "Cursos");
             }
-            return RedirectToAction("Index", "Lecciones", new { id = idLeccionDestino });
+            }
+        public async Task<IActionResult> VerEstudiantes()
+        {
+            List<EstudianteAdminVM> listaEstudiantes = await this.repo.VerEstudiantes();
+            return View(listaEstudiantes);
         }
 
     }
