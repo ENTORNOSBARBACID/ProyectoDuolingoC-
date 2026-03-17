@@ -1,9 +1,80 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Humanizer;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using NuGet.Protocol.Plugins;
 using ProyectoDuolingoC_.Data;
 using ProyectoDuolingoC_.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ProyectoDuolingoC_.Repositories
 {
+    #region procedures
+    //    CREATE PROCEDURE SP_EliminarLeccionEnCascada
+    //    @LeccionID INT
+    //AS
+    //BEGIN
+    //    SET NOCOUNT ON;
+
+    //    -- 1. Capturamos a qué curso pertenece esta lección ANTES de borrarla
+    //    DECLARE @CursoID INT;
+    //    SELECT @CursoID = CursoID FROM dbo.Lecciones WHERE LeccionID = @LeccionID;
+
+    //    BEGIN TRY
+    //        BEGIN TRAN;
+
+    //        -- 2. Borramos Opciones(Nietos)
+    //        DELETE FROM dbo.OpcionesRespuesta
+    //        WHERE PreguntaID IN(
+    //            SELECT PreguntaID FROM dbo.Preguntas WHERE LeccionID = @LeccionID
+    //        );
+
+    //        -- 3. Borramos Preguntas(Hijos)
+    //        DELETE FROM dbo.Preguntas
+    //        WHERE LeccionID = @LeccionID;
+
+    //        -- 4. Borramos Progreso(Hijos)
+    //        DELETE FROM dbo.ProgresoUsuario
+    //        WHERE LeccionID = @LeccionID;
+
+    //        -- 5. Borramos la Lección(Padre)
+    //        DELETE FROM dbo.Lecciones
+    //        WHERE LeccionID = @LeccionID;
+
+    //        -- 6. LA MAGIA DEL REORDENAMIENTO
+    //        --Solo lo hacemos si encontramos el curso válido
+    //        IF @CursoID IS NOT NULL
+    //        BEGIN
+    //            -- Usamos una CTE(Tabla Temporal en Memoria) para enumerar las lecciones que quedan 1, 2, 3...
+    //            WITH LeccionesReordenadas AS(
+    //                SELECT
+    //                    LeccionID,
+    //                    Orden,
+    //                    -- ROW_NUMBER genera una secuencia perfecta (1,2,3...) basándose en el orden que ya tenían
+    //                    ROW_NUMBER() OVER(ORDER BY Orden ASC, LeccionID ASC) AS NuevoOrden
+    //                FROM dbo.Lecciones
+    //                WHERE CursoID = @CursoID
+    //            )
+    //            -- Actualizamos la tabla real pisando el Orden viejo con el NuevoOrden perfecto
+    //            UPDATE LeccionesReordenadas
+    //            SET Orden = NuevoOrden
+    //            -- Pequeña optimización: solo actualizamos si el número realmente ha cambiado
+    //            WHERE Orden<> NuevoOrden;
+    //    END
+
+    //        -- Confirmamos los cambios
+    //        COMMIT TRAN;
+    //    END TRY
+    //    BEGIN CATCH
+    //        --Si falla algo, marcha atrás
+    //        IF @@TRANCOUNT > 0
+    //            ROLLBACK TRAN;
+
+    //    THROW;
+    //    END CATCH
+    //END
+    //GO
+    #endregion
     public class RepositoryLecciones
     {
         private ProyectoContext context;
@@ -36,7 +107,7 @@ namespace ProyectoDuolingoC_.Repositories
         {
             var ultimoProgreso = await this.context.ProgresoUsuario
                 .Where(datos => datos.UsuarioID == idUsu && datos.CursoID == idCur)
-                .OrderByDescending(datos => datos.FechaCompletado) 
+                .OrderByDescending(datos => datos.FechaCompletado)
                 .FirstOrDefaultAsync();
             return ultimoProgreso;
         }
@@ -69,7 +140,7 @@ namespace ProyectoDuolingoC_.Repositories
         }
         public async Task ImplementUsuarioProgreso(int idUsu, int idLec, int idCur)
         {
-            if(await VerProgresoUsuarioAsync(idUsu, idLec) == null)
+            if (await VerProgresoUsuarioAsync(idUsu, idLec) == null)
             {
                 ProgresoUsuario usuP = new ProgresoUsuario
                 {
@@ -79,6 +150,25 @@ namespace ProyectoDuolingoC_.Repositories
                     FechaCompletado = DateTime.Now
                 };
                 await this.context.ProgresoUsuario.AddAsync(usuP);
+                await this.context.SaveChangesAsync();
+            }
+        }
+        public async Task EliminarLeccionEnCascada(int idLeccion)
+        {
+            string sql = "EXEC SP_EliminarLeccionEnCascada @LeccionID";
+            SqlParameter pamId = new SqlParameter("@LeccionID", idLeccion);
+            await this.context.Database.ExecuteSqlRawAsync(sql, pamId);
+        }
+
+        public async Task UpdateLeccionAsync(Leccion leccionModificada)
+        {
+            Leccion leccionOriginal = await this.context.Leccion
+                .FirstOrDefaultAsync(l => l.LeccionID == leccionModificada.LeccionID);
+
+            if (leccionOriginal != null)
+            {
+                leccionOriginal.Titulo = leccionModificada.Titulo;
+                leccionOriginal.ContenidoTeorico = leccionModificada.ContenidoTeorico;
                 await this.context.SaveChangesAsync();
             }
         }

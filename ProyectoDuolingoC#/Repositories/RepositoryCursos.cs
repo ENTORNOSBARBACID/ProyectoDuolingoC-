@@ -132,8 +132,8 @@ namespace ProyectoDuolingoC_.Repositories
 
 
 
-    //    ALTER VIEW VW_Admin_EstudiantesProgreso
-    //    AS
+    //ALTER VIEW VW_Admin_EstudiantesProgreso
+    //AS
     //SELECT
     //    u.UsuarioID,
     //    u.NombreUsuario,
@@ -145,7 +145,7 @@ namespace ProyectoDuolingoC_.Repositories
     //    c.Titulo AS NombreCurso,
     //    c.Descripcion,
     //    c.EtiquetaLenguaje,
-    
+
     //    -- Cálculo del porcentaje a prueba de fallos
     //    CASE
     //        WHEN c.CursoID IS NULL THEN NULL -- El alumno no está inscrito en nada
@@ -175,6 +175,43 @@ namespace ProyectoDuolingoC_.Repositories
     //) AS LecCompletadas ON u.UsuarioID = LecCompletadas.UsuarioID AND c.CursoID = LecCompletadas.CursoID
 
     //--(Hemos eliminado el WHERE u.Rol = 1 para que esta vista sea 100 % reutilizable)
+    //GO
+
+
+
+
+    //    CREATE PROCEDURE SP_ExpulsarEstudianteCurso
+    //    @UsuarioID INT,
+    //    @CursoID INT
+    //AS
+    //BEGIN
+    //    SET NOCOUNT ON;
+
+    //    -- Iniciamos la transacción de seguridad
+    //    BEGIN TRY
+    //        BEGIN TRAN;
+
+    //        -- 1. PRIMERO borramos el progreso(los "hijos")
+    //        -- Si intentamos borrar la matrícula primero, las claves foráneas podrían darnos error
+    //        DELETE FROM dbo.ProgresoUsuario
+    //        WHERE UsuarioID = @UsuarioID AND CursoID = @CursoID;
+
+    //        -- 2. SEGUNDO borramos la inscripción al curso(el "padre")
+    //        DELETE FROM dbo.CursosUsuario
+    //        WHERE UsuarioID = @UsuarioID AND CursoID = @CursoID;
+
+    //        -- Si llegamos aquí sin errores, confirmamos la destrucción de los datos
+    //        COMMIT TRAN;
+    //    END TRY
+    //    BEGIN CATCH
+    //        --Si algo sale mal, cancelamos y deshacemos cualquier borrado a medias
+    //        IF @@TRANCOUNT > 0
+    //            ROLLBACK TRAN;
+
+    //        -- Lanzamos el error hacia arriba para que tu C# se entere
+    //        THROW;
+    //    END CATCH
+    //END
     //GO
     #endregion
     public class RepositoryCursos
@@ -283,7 +320,7 @@ namespace ProyectoDuolingoC_.Repositories
         public async Task<int> GetSiguienteLeccionAsync(int idCurso, int idLeccionActual)
         {
             var siguienteLeccion = await this.context.Leccion
-                .Where(l => l.CursoID == idCurso && l.LeccionID > idLeccionActual) 
+                .Where(l => l.CursoID == idCurso && l.LeccionID > idLeccionActual)
                 .OrderBy(l => l.Orden)
                 .Select(l => l.LeccionID)
                 .FirstOrDefaultAsync();
@@ -316,6 +353,14 @@ namespace ProyectoDuolingoC_.Repositories
 
             return listaEstudiantes;
         }
+        public async Task ExpulsarEstudianteCurso(int idUsuario, int idCurso)
+        {
+            string sql = "SP_ExpulsarEstudianteCurso @UsuarioID, @CursoID";
+            SqlParameter pamUsu = new SqlParameter("@UsuarioID", idUsuario);
+            SqlParameter pamCur = new SqlParameter("@CursoID", idCurso);
+            await this.context.Database.ExecuteSqlRawAsync(sql, pamUsu, pamCur);
+            await this.context.SaveChangesAsync();
 
+        }
     }
 }

@@ -86,5 +86,13 @@ namespace ProyectoDuolingoC_.Repositories
                 await this.context.SaveChangesAsync();
             }
         }
+
+        public async Task<List<Usuario>> ObtenerRankingGlobalAsync()
+        {
+            return await this.context.Usuario
+                .Where(u => u.Rol == 1)
+                .OrderByDescending(u => u.ExperienciaTotal)
+                .ToListAsync();
+        }
     }
 }

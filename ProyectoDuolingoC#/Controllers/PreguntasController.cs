@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProyectoDuolingoC_.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Security.Claims;
@@ -22,14 +23,28 @@ namespace ProyectoDuolingoC_.Controllers
         }
         public async Task<IActionResult> Victoria(int leccionId)
         {
-            ViewData["Puntos"] = HttpContext.Session.GetInt32("PuntosXP") ?? 0;
             ViewData["Intentos"] = HttpContext.Session.GetInt32("IntentosTotales") ?? 0;
+            ViewData["Puntos"] = HttpContext.Session.GetInt32("PuntosXP") ?? 0;
+
+            int puntosGanados = Convert.ToInt32(ViewData["Puntos"]);
+            int idUsuario = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             HttpContext.Session.Remove("PuntosXP");
             HttpContext.Session.Remove("IntentosTotales");
             HttpContext.Session.Remove("IntentosActuales");
-            if(HttpContext.User.FindFirst(ClaimTypes.Role).Value != "2")
+
+
+            if (HttpContext.User.FindFirst(ClaimTypes.Role).Value != "2")
             {
+                ProgresoUsuario progreso = await this.repoLec.VerProgresoUsuarioAsync(idUsuario, leccionId);
+                if(progreso == null)
+                {
+                    await this.repo.SumarPuntos(puntosGanados, idUsuario);
+                }
+                else
+                {
+                    ViewData["Puntos"] =  0;
+                }
                 int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 int idCurso = (await this.repoLec.VerContenido(leccionId)).CursoID;
                 await this.repoLec.ImplementUsuarioProgreso(idUsu, leccionId, idCurso);
@@ -55,7 +70,11 @@ namespace ProyectoDuolingoC_.Controllers
             ViewData["TOTAL_PREGUNTAS"] = preguntas.Count;
             ViewData["PROGRESO_PORCENTAJE"] = (int)((double)index / preguntas.Count * 100);
 
-            HttpContext.Session.SetInt32("IntentosActuales", 0);
+            if (index == 0 && TempData["MENSAJE"] == null)
+            {
+                HttpContext.Session.SetInt32("IntentosActuales", 0);
+                HttpContext.Session.SetInt32("PuntosXP", 0);
+            }
 
             return View(preguntaActual);
         }
@@ -101,16 +120,21 @@ namespace ProyectoDuolingoC_.Controllers
 
             if (esAcierto)
             {
-                if (intentosActuales > 0)
-                {
-                    puntosXP += (int)Math.Round((double)pregunta.PuntosXP / intentosActuales);
-                }
-                else
+                if (intentosActuales == 0)
                 {
                     puntosXP += pregunta.PuntosXP;
                 }
-                HttpContext.Session.SetInt32("PuntosXP", puntosXP);
+                else if (intentosActuales <= 5)
+                {
+                    puntosXP += (int)Math.Round((double)pregunta.PuntosXP / (intentosActuales + 1));
+                }
+                else
+                {
+                    puntosXP += 1; 
+                }
 
+                HttpContext.Session.SetInt32("PuntosXP", puntosXP);
+                HttpContext.Session.SetInt32("IntentosActuales", 0);
                 return RedirectToAction("Preguntas", new { id = LeccionID, index = IndexActual + 1 });
             }
             else
@@ -206,12 +230,20 @@ namespace ProyectoDuolingoC_.Controllers
             await this.repo.EliminarOpcion(OpcionID);
             return RedirectToAction("VerOpciones", new { id = PreguntaID });
         }
-        [HttpPost]
-        public async Task<IActionResult> Delete(int id)
+
+        [Authorize(Policy = "SOLOADMIN")]
+        [HttpGet]
+        public async Task<IActionResult> Eliminar(int id)
         {
-            int idLeccion = (await this.repo.VerPreguntaPorId(id)).LeccionID;
-            await this.repo.Delete(id);
-            return RedirectToAction("VerPreguntas", new { idLec = idLeccion });
+            Pregunta pregunta = await this.repo.VerPreguntaPorId(id);
+            int idLeccionOriginal = pregunta.LeccionID;
+            await this.repo.EliminarPregunta(id);
+
+            TempData["Titulo"] = "¡Pregunta eliminada!";
+            TempData["Mensaje"] = "La pregunta y sus opciones han desaparecido para siempre.";
+            TempData["Icono"] = "success";
+
+            return RedirectToAction("VerPreguntas", new { idLec = idLeccionOriginal });
         }
     }
 }

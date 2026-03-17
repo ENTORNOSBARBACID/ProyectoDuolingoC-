@@ -182,6 +182,12 @@ namespace ProyectoDuolingoC_.Controllers
             return RedirectToAction("VerPerfil");
         }
 
+        public async Task<IActionResult> Ranking()
+        {
+            List<Usuario> usu = await this.repo.ObtenerRankingGlobalAsync();
+            return View(usu);
+        }
+
 
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

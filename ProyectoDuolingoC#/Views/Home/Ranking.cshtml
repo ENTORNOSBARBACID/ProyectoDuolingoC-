@@ -1,0 +1,273 @@
+﻿@model IEnumerable<ProyectoDuolingoC_.Models.Usuario>
+
+
+@{
+    ViewData["Title"] = "Ranking Global";
+
+    // --- LÓGICA DE PAGINACIÓN ---
+    int registrosPorPagina = 10;
+    int paginaActual = 1;
+    if (Context.Request.Query.ContainsKey("pagina"))
+    {
+        int.TryParse(Context.Request.Query["pagina"], out paginaActual);
+    }
+
+    int totalUsuarios = Model.Count();
+    int totalPaginas = (int)Math.Ceiling((double)totalUsuarios / registrosPorPagina);
+
+    // Calculamos la posición inicial según la página (Ej: Pág 2 -> empieza en pos 6)
+    int posicion = ((paginaActual - 1) * registrosPorPagina) + 1;
+
+    var usuariosPaginados = Model
+        .Skip((paginaActual - 1) * registrosPorPagina)
+        .Take(registrosPorPagina)
+        .ToList();
+
+    // Función de Ligas
+    string ObtenerDatosLiga(int exp, out string colorHex, out string icono)
+    {
+        if (exp >= 3000) { colorHex = "#9b59b6"; icono = "bi-gem"; return "Maestro"; }
+        if (exp >= 1500) { colorHex = "#ffc800"; icono = "bi-trophy-fill"; return "Oro"; }
+        if (exp >= 1000) { colorHex = "#a8b5c2"; icono = "bi-shield-fill"; return "Plata"; }
+        if (exp >= 500) { colorHex = "#cd7f32"; icono = "bi-shield-shaded"; return "Bronce"; }
+        colorHex = "#95a5a6"; icono = "bi-star-fill"; return "Principiante";
+    }
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    :root {
+        --f-bg: #fdfdfd;
+        --f-dark: #1a4332;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: var(--f-bg);
+    }
+
+    .ranking-header {
+        background: var(--f-dark);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0 0 40px 40px;
+        margin-top: -2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(26, 67, 50, 0.15);
+    }
+
+    .ranking-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        border: 2px solid #e5e5e5;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+    }
+
+    .ranking-row {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        margin-bottom: 0.5rem;
+        transition: 0.2s;
+        border: 2px solid transparent;
+    }
+
+        .ranking-row:hover {
+            background-color: #f7f7f7;
+            transform: scale(1.02);
+        }
+
+    /* TOP 3 DESTACADO INDEPENDIENTEMENTE DE LA LIGA */
+    .rank-1 {
+        background-color: rgba(255, 200, 0, 0.05);
+        border-color: #ffc800;
+    }
+
+    .rank-2 {
+        background-color: rgba(168, 181, 194, 0.05);
+        border-color: #a8b5c2;
+    }
+
+    .rank-3 {
+        background-color: rgba(205, 127, 50, 0.05);
+        border-color: #cd7f32;
+    }
+
+    .pos-number {
+        font-size: 1.5rem;
+        font-weight: 900;
+        width: 40px;
+        text-align: center;
+        color: #adb5bd;
+    }
+
+    .rank-1 .pos-number {
+        color: #ffc800;
+        font-size: 2rem;
+    }
+
+    .rank-2 .pos-number {
+        color: #a8b5c2;
+        font-size: 1.8rem;
+    }
+
+    .rank-3 .pos-number {
+        color: #cd7f32;
+        font-size: 1.7rem;
+    }
+
+    .avatar-img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 1.5rem;
+        border: 2px solid #e5e5e5;
+    }
+
+    .user-info {
+        flex-grow: 1;
+    }
+
+    .user-name {
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: #333;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* LA INSIGNIA DE LA LIGA */
+    .badge-liga {
+        padding: 0.3rem 0.6rem;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .user-xp {
+        font-weight: 900;
+        font-size: 1.4rem;
+        color: #1a4332;
+    }
+</style>
+
+<div class="ranking-header">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-0"><i class="bi bi-bar-chart-fill text-warning me-3"></i>Clasificación</h1>
+        <p class="lead opacity-75 mt-2 mb-0">Compite, gana experiencia y alcanza la Liga Maestro</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="ranking-container">
+        @if (usuariosPaginados.Any())
+        {
+            foreach (var usuario in usuariosPaginados)
+            {
+                int exp = usuario.ExperienciaTotal;
+                string colorLiga, iconoLiga;
+                string nombreLiga = ObtenerDatosLiga(exp, out colorLiga, out iconoLiga);
+
+                // El Top 3 solo brilla si estamos en la página 1
+                string rankClass = "";
+                if (paginaActual == 1)
+                {
+                    rankClass = posicion == 1 ? "rank-1" : (posicion == 2 ? "rank-2" : (posicion == 3 ? "rank-3" : ""));
+                }
+
+                <div class="ranking-row @rankClass">
+                    <div class="pos-number">
+                        @if (posicion == 1 && paginaActual == 1)
+                        {
+                            <i class="bi bi-award-fill"></i>
+                        }
+                        else
+                        {
+
+                            @posicion
+                        }
+                    </div>
+
+                    @if (usuario.Imagen != null && usuario.Imagen.Length > 0)
+                    {
+                        string base64 = Convert.ToBase64String(usuario.Imagen);
+                        <img src="data:image/jpeg;base64,@base64" class="avatar-img" alt="Avatar" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-person-circle text-muted d-flex justify-content-center align-items-center" style="font-size: 2.5rem; margin: 0 1.5rem;"></i>
+                    }
+
+                    <div class="user-info">
+                        <p class="user-name">
+                            @usuario.NombreUsuario
+                            <span class="badge-liga" style="background-color: @colorLiga;">
+                                <i class="bi @iconoLiga"></i> @nombreLiga
+                            </span>
+                        </p>
+                    </div>
+
+                    <div class="user-xp">
+                        @exp XP
+                    </div>
+                </div>
+
+                posicion++;
+            }
+
+            @* --- NAVEGACIÓN --- *@
+            @if (totalPaginas > 1)
+            {
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                            <a class="page-link shadow-sm border-0" href="?pagina=@(paginaActual - 1)" style="color: var(--f-dark);">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @for (int i = 1; i <= totalPaginas; i++)
+                        {
+                            <li class="page-item @(i == paginaActual ? "active" : "")">
+                                <a class="page-link shadow-sm border-0 mx-1" href="?pagina=@i"
+                                   style="@(i == paginaActual ? "background-color: var(--f-dark); color: white;" : "color: var(--f-dark);")">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                            <a class="page-link shadow-sm border-0" href="?pagina=@(paginaActual + 1)" style="color: var(--f-dark);">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-emoji-frown text-muted" style="font-size: 3rem;"></i>
+                <h4 class="text-muted mt-3">No hay estudiantes en esta página.</h4>
+            </div>
+        }
+    </div>
+</div>

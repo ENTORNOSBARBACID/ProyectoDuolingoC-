@@ -194,7 +194,11 @@ namespace ProyectoDuolingoC_.Controllers
 
         public async Task<IActionResult> ExpulsarEstudiante(int idUsuario, int idCurso)
         {
-           return RedirectToAction("VerEstudiantes");
+            await this.repo.ExpulsarEstudianteCurso(idUsuario, idCurso);
+            TempData["Titulo"] = "¡Usuario expulsado!";
+            TempData["Mensaje"] = "Se ha expulsado al alumno correctamente.";
+            TempData["Icono"] = "success";
+            return RedirectToAction("VerEstudiantes");
         }
 
     }

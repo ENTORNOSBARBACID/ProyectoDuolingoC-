@@ -87,33 +87,54 @@
     /* Sidebar Flotante */
     .enroll-card {
         background: white;
-        border-radius: 35px;
+        border-radius: 28px; /* Un poco menos exagerado para que se vea más profesional */
         padding: 2.5rem;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.1);
-        border: 1px solid #eee;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.05), 0 5px 15px rgba(0,0,0,0.03);
+        border: 1px solid #f0f0f0;
         position: sticky;
         top: 20px;
+        transition: box-shadow 0.3s ease;
     }
+
+        /* Efecto sutil: cuando pasas el ratón por la tarjeta, se eleva un poco */
+        .enroll-card:hover {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        }
 
     .btn-enroll-now {
-        background: var(--f-accent);
+        background: var(--f-dark);
         color: white;
         border: none;
-        border-radius: 20px;
-        padding: 1.2rem;
-        font-weight: 900;
+        border-radius: 18px;
+        padding: 1.2rem 1rem; /* Reducimos un poco el padding lateral si es necesario */
+        font-size: 1rem; /* Ajustamos el tamaño para que quepa bien */
+        font-weight: 800;
         width: 100%;
+        /* --- LA MAGIA ESTÁ AQUÍ --- */
+        white-space: nowrap; /* Evita que el texto salte de línea */
+        display: flex; /* Centrado perfecto */
+        align-items: center;
+        justify-content: center;
+        /* -------------------------- */
+
         text-transform: uppercase;
         letter-spacing: 1px;
-        box-shadow: 0 10px 20px rgba(88, 204, 2, 0.3);
-        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 20px rgba(26, 67, 50, 0.25);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        text-decoration: none;
     }
 
-
         .btn-enroll-now:hover {
-            transform: scale(1.03) translateY(-5px);
-            filter: brightness(1.1);
+            transform: scale(1.02) translateY(-3px);
+            filter: brightness(1.2);
             color: white;
+            box-shadow: 0 12px 25px rgba(26, 67, 50, 0.35);
+        }
+
+        /* Estado activo (cuando haces clic) */
+        .btn-enroll-now:active {
+            transform: scale(0.98) translateY(0);
         }
 
     /* --- LISTA DE LECCIONES --- */
@@ -138,7 +159,7 @@
     }
 
         .lesson-strip:hover {
-            border-color: var(--f-accent);
+            border-color: var(--f-dark);
             background: #f8fbf9;
             transform: translateX(10px);
         }
@@ -154,6 +175,37 @@
             transform: translateX(10px);
         }
 
+    /* --- ESTILOS PARA LECCIÓN COMPLETADA --- */
+    .lesson-strip.lesson-completed {
+        /* Usamos un color sólido para evitar que el texto se vea borroso */
+        background-color: #f1f4f2 !important;
+        border-left: 6px solid #1a4332 !important;
+        border-right: 1px solid #d1d9d4 !important;
+        border-top: 1px solid #d1d9d4 !important;
+        border-bottom: 1px solid #d1d9d4 !important;
+        transition: all 0.2s ease;
+    }
+
+        /* Forzamos que el hover se note incluso en las completadas */
+        .lesson-strip.lesson-completed:hover {
+            background-color: #e6ede9 !important; /* Un verde un pelín más oscuro al pasar el ratón */
+            transform: translateX(5px); /* Efecto de desplazamiento lateral */
+            box-shadow: 0 4px 12px rgba(26, 67, 50, 0.1);
+        }
+
+    /* El círculo del check bien definido */
+    .lesson-completed .lesson-idx {
+        background-color: #1a4332 !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Título nítido */
+    .lesson-completed h6 {
+        color: #1a4332 !important;
+        font-weight: 700 !important;
+    }
     /* --- AÑADIR LECCIÓN --- */
     .lesson-strip-add {
         display: flex;
@@ -232,16 +284,60 @@
                     int idx = 1;
                     foreach (var leccion in lecciones)
                     {
-                        if (ViewData["CURSO"] is false && ViewData["LECCION"] != null && leccion.Orden <= (int)ViewData["LECCION"]  )
+                        @if (ViewData["CURSO"] is false && ViewData["LECCION"] != null && leccion.Orden <= (int)ViewData["LECCION"])
                         {
-                            <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID" class="lesson-strip animate__animated animate__fadeInLeft"
-                               style="animation-delay: @(0.4 + (idx * 0.1))s">
-                                <div class="lesson-idx">@idx</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
-                                    <small class="text-muted">Módulo de aprendizaje • 20-40 min</small>
-                                </div>
-                            </a>
+                            // Determinamos si la lección está completada
+                            // (Según tu lógica: si el orden es MENOR al progreso actual del usuario)
+                            bool estaCompletada = leccion.Orden < (int)ViewData["LECCION"];
+                            string claseCompletada = estaCompletada ? "lesson-completed" : "";
+
+                            <div class="lesson-strip animate__animated animate__fadeInLeft d-flex align-items-center pe-3 @claseCompletada"
+                                 style="animation-delay: @(0.4 + (idx * 0.1))s">
+
+                                <a asp-action="Index" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID"
+                                   class="d-flex align-items-center flex-grow-1 text-decoration-none text-dark">
+
+                                    <div class="lesson-idx d-flex align-items-center justify-content-center shadow-sm">
+                                        @if (estaCompletada)
+                                        {
+                                            <i class="bi bi-check-lg fs-5"></i>
+                                        }
+                                        else
+                                        {
+                                            @idx
+                                        }
+                                    </div>
+
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">@leccion.Titulo</h6>
+                                        <small class="text-muted">
+                                            @if (estaCompletada)
+                                            {
+                                                <span class="text-success fw-bold"><i class="bi bi-patch-check-fill me-1"></i>¡Completado!</span>
+                                            }
+                                            else
+                                            {
+                                                @:Módulo de aprendizaje • 20-40 min
+                                            }
+                                        </small>
+                                    </div>
+                                </a>
+
+                                @if (Context.User.FindFirst(ClaimTypes.Role)?.Value == "2")
+                                {
+                                    <div class="lesson-actions ms-auto d-flex gap-2">
+                                        <a asp-action="Edit" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID"
+                                           class="btn btn-sm btn-outline-primary" style="border-radius: 10px;" title="Editar Lección">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;" title="Eliminar Lección"
+                                                onclick="confirmarEliminarLeccion(@leccion.LeccionID, '@leccion.Titulo', @leccion.CursoID)">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </button>
+                                    </div>
+                                }
+                            </div>
                         }
                         else 
                         {
@@ -260,11 +356,14 @@
                 {
                     <p class="text-muted mb-4"><i class="bi bi-info-circle me-2"></i>Aún no hay lecciones creadas para este curso.</p>
                 }
-
-                <a asp-action="Create" asp-controller="Lecciones" asp-route-id="@Model.CursoID" class="lesson-strip-add mt-4">
-                    <i class="bi bi-plus-circle me-2 fs-4"></i>
-                    <h6 class="mb-0 fw-bold">Añadir nueva lección</h6>
-                </a>
+                @if (Context.User.FindFirst(ClaimTypes.Role).Value == "2")
+                {
+                    
+                    <a asp-action="Create" asp-controller="Lecciones" asp-route-id="@Model.CursoID" class="lesson-strip-add mt-4">
+                        <i class="bi bi-plus-circle me-2 fs-4"></i>
+                        <h6 class="mb-0 fw-bold">Añadir nueva lección</h6>
+                    </a>
+                }
 
             </div>
         </div>
@@ -317,4 +416,23 @@
 <div class="py-5"></div>
 
 @section Scripts {
+    <script>
+        function confirmarEliminarLeccion(idLeccion, tituloLeccion, idCurso) {
+        Swal.fire({
+            title: '¿Borrar lección?',
+            html: `Vas a eliminar la lección <b>${tituloLeccion}</b> de forma permanente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Cambia "Lecciones" y "Eliminar" por los nombres de tu controlador y acción reales
+                    window.location.href = `/Lecciones/Eliminar?id=${idLeccion}&idCurso=${idCurso}`;
+            }
+        })
+    }
+    </script>
 }

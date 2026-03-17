@@ -204,10 +204,12 @@
                 <i class="bi bi-info-circle-fill me-2"></i> No hay preguntas configuradas para esta lección todavía.
             </div>
         }
+        @if (Context.User.FindFirst(ClaimTypes.Role).Value == "2") {
 
         <a asp-action="VerPreguntas" asp-route-idLec="@leccionId" class="btn-secondary-action animate__animated animate__fadeInUp" style="animation-delay: 0.9s;">
             <i class="bi bi-list-task"></i> Ver lista de preguntas
         </a>
+        }
 
     </div>
 </div>

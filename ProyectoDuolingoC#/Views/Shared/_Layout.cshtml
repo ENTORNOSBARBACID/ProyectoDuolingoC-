@@ -212,6 +212,8 @@
                             <span>Inicio</span>
                         </a>
                     </li>
+
+                    
                     @if (Context.User.FindFirst(ClaimTypes.NameIdentifier) != null)
                     {
                         @if (User.HasClaim(ClaimTypes.Role, "2"))
@@ -236,6 +238,13 @@
                             </li>
                             }
                         }
+                    <li>
+                        <a asp-controller="Home" asp-action="Ranking"
+                           class="@(controller == "Ranking" && action == "Index" ? "active-link" : "")">
+                            <i class="bi bi-trophy"></i>
+                            <span>Ranking</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 

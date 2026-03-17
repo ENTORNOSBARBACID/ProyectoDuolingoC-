@@ -34,6 +34,5 @@ namespace ProyectoDuolingoC_.Models
         // Las propiedades de navegación NO llevan [Column]
         public virtual Autenticacion? Autenticacion { get; set; }
         public virtual List<ProgresoUsuario> ProgresoUsuarios { get; set; } = new List<ProgresoUsuario>();
-        public virtual List<Ranking> Rankings { get; set; } = new List<Ranking>();
     }
 }

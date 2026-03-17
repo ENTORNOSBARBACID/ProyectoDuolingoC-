@@ -1,7 +1,7 @@
 ﻿@model ProyectoDuolingoC_.Models.Leccion
 
 @{
-    ViewData["Title"] = "Añadir Lección";
+    ViewData["Title"] = "Editar Lección";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <style>
     :root {
         --f-dark: #1a4332;
-        --f-accent: #58cc02; /* Verde tipo Duolingo */
+        --f-accent: #58cc02;
         --f-bg: #fdfdfd;
     }
 
@@ -58,14 +58,14 @@
         box-shadow: 0 20px 40px rgba(0,0,0,0.05);
         border: 1px solid #f0f0f0;
         margin-bottom: 4rem;
-        text-align: center; /* Centramos el texto del formulario */
+        text-align: center;
     }
 
     .form-group {
         margin-bottom: 2rem;
         display: flex;
         flex-direction: column;
-        align-items: center; /* Centramos los inputs */
+        align-items: center;
     }
 
     .control-label {
@@ -84,8 +84,8 @@
         transition: 0.3s;
         background-color: #f8f9fa;
         width: 100%;
-        max-width: 500px; /* Limitamos el ancho para que no se vea desproporcionado al estar centrado */
-        text-align: center; /* Centramos el texto que el usuario escribe */
+        max-width: 500px;
+        text-align: center;
     }
 
         .custom-input:focus {
@@ -104,9 +104,9 @@
     /* --- EDITOR TINYMCE --- */
     .editor-container {
         width: 100%;
-        max-width: 800px; /* Un poco más ancho para el editor de texto */
+        max-width: 800px;
         margin: 0 auto;
-        text-align: left; /* El contenido del editor sí debe alinearse a la izquierda por defecto */
+        text-align: left;
     }
 
     /* --- BOTÓN GUARDAR --- */
@@ -134,11 +134,11 @@
 
 <div class="page-header position-relative animate__animated animate__fadeInDown">
     <div class="container">
-        <a asp-controller="Cursos" asp-action="Details" asp-route-id="@ViewData["CURSOID"]" class="btn-return">
+        <a asp-controller="Cursos" asp-action="Details" asp-route-id="@Model.CursoID" class="btn-return">
             <i class="bi bi-arrow-left-short fs-4"></i> Volver al Curso
         </a>
-        <h1 class="display-5 fw-bold mb-0">Crear Nueva Lección</h1>
-        <p class="lead opacity-75 mt-2 mb-0">Diseña el contenido para tus alumnos</p>
+        <h1 class="display-5 fw-bold mb-0">Editar Lección</h1>
+        <p class="lead opacity-75 mt-2 mb-0">Modifica y actualiza el contenido para tus alumnos</p>
     </div>
 </div>
 
@@ -147,25 +147,26 @@
         <div class="col-lg-10">
             <div class="form-card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
 
-                <form asp-action="Create">
+                <form method="post">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <input type="hidden" asp-for="LeccionID" />
+                    <input type="hidden" asp-for="CursoID" />
+                    <input type="hidden" asp-for="Orden" />
 
                     <div class="row justify-content-center">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="control-label">Nombre del Curso</label>
                                 <input class="form-control custom-input" value="@ViewData["NOMBRECURSO"]" readonly />
-                                <span class="text-danger small fw-bold"></span>
                             </div>
                         </div>
                     </div>
 
-                    <input type="hidden" asp-for="CursoID" value="@ViewData["CURSOID"]" />
-
                     <div class="form-group">
                         <label asp-for="Titulo" class="control-label">Título de la Lección</label>
                         <input asp-for="Titulo" class="form-control custom-input" placeholder="Ej: Introducción a las variables..." />
-                        <span asp-validation-for="Titulo" class="text-danger small fw-bold"></span>
+                        <span asp-validation-for="Titulo" class="text-danger small fw-bold mt-1"></span>
                     </div>
 
                     <div class="form-group editor-container mt-5 mb-4">
@@ -178,7 +179,7 @@
 
                     <div class="form-group mt-5">
                         <button type="submit" class="btn-submit">
-                            <i class="bi bi-save me-2"></i> Guardar Lección
+                            <i class="bi bi-save me-2"></i> Actualizar Lección
                         </button>
                     </div>
                 </form>
@@ -198,24 +199,19 @@
     <script>
         tinymce.init({
             selector: '#editor-texto',
-            height: 600, /* Lo he hecho más alto para que sea más cómodo editar */
-            menubar: true, /* Activamos el menú superior (Archivo, Editar, Ver, Insertar...) */
-
-            /* Cargamos TODAS las herramientas disponibles en la versión gratuita */
+            height: 600,
+            menubar: true,
             plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount emoticons',
-
-            /* Organizamos la barra de herramientas para que tenga de todo */
             toolbar: 'undo redo | formatselect fontselect fontsizeselect | ' +
                      'bold italic underline strikethrough | forecolor backcolor | ' +
                      'alignleft aligncenter alignright alignjustify | ' +
                      'bullist numlist outdent indent | ' +
                      'link image media table emoticons | ' +
                      'removeformat | fullscreen preview code help',
-
             content_style: 'body { font-family: "Outfit", sans-serif; font-size: 16px; color: #333; line-height: 1.6; }',
             branding: false,
             promotion: false,
-            language: 'es' /* Opcional: si el CDN lo soporta, intentará poner la interfaz en español */
+            language: 'es'
         });
     </script>
 }

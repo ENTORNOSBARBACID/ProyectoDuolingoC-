@@ -3,8 +3,36 @@
 @{
     ViewData["Title"] = "Gestión de Usuarios";
 
-    // Separamos la lista en dos grupos para mayor comodidad en el HTML
-    var estudiantes = Model.Where(u => u.Rol == 1).ToList();
+    // --- CAPTURA DE PARÁMETROS ---
+    string buscar = Context.Request.Query["buscar"].ToString() ?? "";
+    int registrosPorPagina = 5;
+    int paginaActual = 1;
+
+    if (Context.Request.Query.ContainsKey("pagina"))
+    {
+        int.TryParse(Context.Request.Query["pagina"], out paginaActual);
+    }
+
+    // --- FILTRADO ---
+    var todosLosEstudiantes = Model.Where(u => u.Rol == 1);
+
+    if (!string.IsNullOrEmpty(buscar))
+    {
+        todosLosEstudiantes = todosLosEstudiantes.Where(u =>
+            u.NombreUsuario.Contains(buscar, StringComparison.OrdinalIgnoreCase) ||
+            u.CorreoElectronico.Contains(buscar, StringComparison.OrdinalIgnoreCase));
+    }
+
+    // --- PAGINACIÓN ---
+    var listaEstudiantes = todosLosEstudiantes.ToList();
+    int totalEstudiantes = listaEstudiantes.Count();
+    int totalPaginas = (int)Math.Ceiling((double)totalEstudiantes / registrosPorPagina);
+
+    var estudiantesPaginados = listaEstudiantes
+                                .Skip((paginaActual - 1) * registrosPorPagina)
+                                .Take(registrosPorPagina)
+                                .ToList();
+
     var administradores = Model.Where(u => u.Rol == 2).ToList();
 }
 
@@ -33,7 +61,6 @@
         box-shadow: 0 10px 20px rgba(26, 67, 50, 0.15);
     }
 
-    /* --- Estilos del Acordeón (Estudiantes) --- */
     .custom-accordion .accordion-item {
         border: none;
         border-radius: 15px;
@@ -55,7 +82,6 @@
             color: var(--forest-base);
         }
 
-    /* --- Estilos de las Tarjetas de Admin --- */
     .admin-card {
         background: white;
         border-radius: 15px;
@@ -65,10 +91,9 @@
         gap: 1rem;
         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         margin-bottom: 1rem;
-        border-left: 5px solid #ffc107; /* Borde amarillo para distinguirlos */
+        border-left: 5px solid #ffc107;
     }
 
-    /* --- Avatares --- */
     .student-avatar {
         width: 50px;
         height: 50px;
@@ -78,10 +103,9 @@
     }
 
     .admin-avatar {
-        border-color: #ffc107; /* Borde amarillo para administradores */
+        border-color: #ffc107;
     }
 
-    /* --- Lista Interna de Cursos --- */
     .course-list-item {
         display: flex;
         align-items: center;
@@ -90,10 +114,6 @@
         border-bottom: 1px solid var(--border-color);
         transition: 0.2s;
     }
-
-        .course-list-item:last-child {
-            border-bottom: none;
-        }
 
         .course-list-item:hover {
             background-color: #fcfcfc;
@@ -105,7 +125,6 @@
         background-color: #e9ecef;
         border-radius: 10px;
         overflow: hidden;
-        margin-top: 5px;
     }
 
     .progress-mini-fill {
@@ -120,13 +139,25 @@
         border-radius: 10px;
         padding: 0.4rem 0.8rem;
         font-weight: bold;
-        transition: 0.2s;
     }
 
         .btn-remove:hover {
             background-color: #dc3545;
             color: #fff;
         }
+
+    .pagination .page-link {
+        border: none;
+        margin: 0 3px;
+        font-weight: 600;
+        color: var(--forest-base);
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--forest-base);
+        border-color: var(--forest-base);
+        color: white;
+    }
 </style>
 
 <div class="container mt-4">
@@ -135,22 +166,38 @@
         <p class="opacity-75 mb-0">Supervisa a tus estudiantes y a tu equipo de administradores.</p>
     </div>
 
+    @* --- FILA PRINCIPAL --- *@
     <div class="row">
+        <form method="get" class="mb-4">
+            <div class="input-group shadow-sm" style="border-radius: 15px; overflow: hidden; border: 2px solid var(--forest-base);">
+                <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="buscar" class="form-control border-0" placeholder="Buscar por nombre o correo..." value="@buscar">
+                @if (!string.IsNullOrEmpty(buscar))
+                {
+                    <a href="?" class="btn btn-light border-0 d-flex align-items-center"><i class="bi bi-x-lg"></i></a>
+                }
+                <button class="btn btn-success border-0 px-4" type="submit" style="background-color: var(--forest-base);">Buscar</button>
+            </div>
+        </form>
+        @* --- COLUMNA ESTUDIANTES (8) --- *@
         <div class="col-lg-8 mb-4">
-            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-mortarboard-fill text-success me-2"></i>Estudiantes</h3>
 
-            @if (estudiantes.Any())
+            @* Buscador *@
+            
+
+            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-mortarboard-fill text-success me-2"></i>Estudiantes (@totalEstudiantes)</h3>
+
+            @if (estudiantesPaginados.Any())
             {
                 <div class="accordion custom-accordion" id="accordionEstudiantes">
-                    @foreach (var estudiante in estudiantes)
+                    @foreach (var estudiante in estudiantesPaginados)
                     {
                         string collapseId = $"collapse-{estudiante.UsuarioID}";
                         string headingId = $"heading-{estudiante.UsuarioID}";
 
                         <div class="accordion-item">
                             <h2 class="accordion-header" id="@headingId">
-                                <button class="accordion-button collapsed d-flex align-items-center gap-3" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
-
+                                <button class="accordion-button collapsed d-flex align-items-center gap-3" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId">
                                     @if (estudiante.Imagen != null && estudiante.Imagen.Length > 0)
                                     {
                                         string base64 = Convert.ToBase64String(estudiante.Imagen);
@@ -158,37 +205,28 @@
                                     }
                                     else
                                     {
-                                        <i class="bi bi-person-circle text-muted" style="font-size: 50px; line-height: 1;"></i>
+                                        <i class="bi bi-person-circle text-muted" style="font-size: 50px;"></i>
                                     }
-
                                     <div>
                                         <h5 class="mb-0 fw-bold">@estudiante.NombreUsuario</h5>
                                         <small class="text-muted">@estudiante.CorreoElectronico</small>
                                     </div>
                                 </button>
                             </h2>
-
-                            <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="@headingId" data-bs-parent="#accordionEstudiantes">
+                            <div id="@collapseId" class="accordion-collapse collapse" data-bs-parent="#accordionEstudiantes">
                                 <div class="accordion-body p-0">
                                     @if (estudiante.CursosInscritos != null && estudiante.CursosInscritos.Any())
                                     {
-                                        <div class="p-3 bg-light border-bottom">
-                                            <h6 class="fw-bold mb-0 text-muted"><i class="bi bi-journal-bookmark-fill me-2"></i>Cursos en curso:</h6>
-                                        </div>
-
-                                        @foreach (var curso in estudiante.CursosInscritos)
+                                        foreach (var curso in estudiante.CursosInscritos)
                                         {
                                             <div class="course-list-item">
                                                 <div>
                                                     <span class="fw-bold d-block text-dark">@curso.Titulo</span>
                                                     <div class="d-flex align-items-center gap-2">
                                                         <small class="text-muted fw-bold">@curso.PorcentajeProgreso%</small>
-                                                        <div class="progress-mini">
-                                                            <div class="progress-mini-fill" style="width: @curso.PorcentajeProgreso%;"></div>
-                                                        </div>
+                                                        <div class="progress-mini"><div class="progress-mini-fill" style="width: @curso.PorcentajeProgreso%;"></div></div>
                                                     </div>
                                                 </div>
-
                                                 <button type="button" class="btn-remove" onclick="confirmarEliminacion(@estudiante.UsuarioID, @curso.CursoID, '@curso.Titulo', '@estudiante.NombreUsuario')">
                                                     <i class="bi bi-trash3-fill"></i> Expulsar
                                                 </button>
@@ -197,55 +235,57 @@
                                     }
                                     else
                                     {
-                                        <div class="p-4 text-center text-muted">
-                                            <i class="bi bi-emoji-frown fs-3 d-block mb-2"></i>
-                                            Este estudiante aún no se ha matriculado en ningún curso.
-                                        </div>
+                                        <div class="p-4 text-center text-muted">No matriculado en cursos.</div>
                                     }
                                 </div>
                             </div>
                         </div>
                     }
                 </div>
-            }
-            else
-            {
-                <div class="text-center py-4 bg-white rounded-3 shadow-sm border">
-                    <p class="text-muted mb-0">No hay estudiantes registrados.</p>
-                </div>
+
+                @* Paginación con persistencia de búsqueda *@
+                @if (totalPaginas > 1)
+                {
+                    <nav class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(paginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link shadow-sm" href="?pagina=@(paginaActual - 1)&buscar=@buscar"><i class="bi bi-chevron-left"></i></a>
+                            </li>
+                            @for (int i = 1; i <= totalPaginas; i++)
+                            {
+                                <li class="page-item @(i == paginaActual ? "active" : "")">
+                                    <a class="page-link shadow-sm" href="?pagina=@i&buscar=@buscar">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(paginaActual == totalPaginas ? "disabled" : "")">
+                                <a class="page-link shadow-sm" href="?pagina=@(paginaActual + 1)&buscar=@buscar"><i class="bi bi-chevron-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
             }
         </div>
 
+        @* --- COLUMNA ADMINISTRADORES (4) --- *@
         <div class="col-lg-4 mb-4">
-            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Administradores</h3>
-
-            @if (administradores.Any())
+            <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-shield-lock-fill text-warning me-2"></i>Admins</h3>
+            @foreach (var admin in administradores)
             {
-                @foreach (var admin in administradores)
-                {
-                    <div class="admin-card">
-                        @if (admin.Imagen != null && admin.Imagen.Length > 0)
-                        {
-                            string base64 = Convert.ToBase64String(admin.Imagen);
-                            <img src="data:image/jpeg;base64,@base64" class="student-avatar admin-avatar" alt="Avatar" />
-                        }
-                        else
-                        {
-                            <i class="bi bi-person-badge-fill text-warning" style="font-size: 40px; line-height: 1;"></i>
-                        }
-
-                        <div>
-                            <h6 class="mb-0 fw-bold text-dark">@admin.NombreUsuario</h6>
-                            <small class="text-muted d-block">@admin.CorreoElectronico</small>
-                            <span class="badge bg-warning text-dark mt-1" style="font-size: 0.7rem;">ADMINISTRADOR</span>
-                        </div>
+                <div class="admin-card">
+                    @if (admin.Imagen != null && admin.Imagen.Length > 0)
+                    {
+                        string b64 = Convert.ToBase64String(admin.Imagen);
+                        <img src="data:image/jpeg;base64,@b64" class="student-avatar admin-avatar" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-person-badge-fill text-warning" style="font-size: 40px;"></i>
+                    }
+                    <div>
+                        <h6 class="mb-0 fw-bold">@admin.NombreUsuario</h6>
+                        <small class="text-muted d-block">@admin.CorreoElectronico</small>
+                        <span class="badge bg-warning text-dark mt-1" style="font-size: 0.7rem;">ADMIN</span>
                     </div>
-                }
-            }
-            else
-            {
-                <div class="text-center py-4 bg-white rounded-3 shadow-sm border">
-                    <p class="text-muted mb-0">No hay otros administradores.</p>
                 </div>
             }
         </div>
@@ -255,21 +295,15 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function confirmarEliminacion(idUsuario, idCurso, nombreCurso, nombreEstudiante) {
+        function confirmarEliminacion(uId, cId, cNombre, uNombre) {
             Swal.fire({
                 title: '¿Estás seguro?',
-                html: `Vas a expulsar a <b>${nombreEstudiante}</b> del curso <b>${nombreCurso}</b>.<br/>¡Esto borrará todo su progreso!`,
+                html: `Vas a expulsar a <b>${uNombre}</b> de <b>${cNombre}</b>.`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, expulsar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = `/Cursos/ExpulsarEstudiante?idUsuario=${idUsuario}&idCurso=${idCurso}`;
-                }
-            })
+                confirmButtonText: 'Sí, expulsar'
+            }).then((r) => { if (r.isConfirmed) window.location.href = `/Cursos/ExpulsarEstudiante?idUsuario=${uId}&idCurso=${cId}`; });
         }
     </script>
 }
