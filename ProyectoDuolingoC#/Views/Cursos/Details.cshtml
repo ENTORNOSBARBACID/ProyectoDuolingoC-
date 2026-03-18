@@ -223,8 +223,8 @@
 
         .lesson-strip-add:hover {
             background: white;
-            border-color: var(--f-accent);
-            color: var(--f-accent);
+            border-color: var(--f-dark);
+            color: var(--f-dark);
             transform: scale(1.02);
         }
 
@@ -240,6 +240,32 @@
         font-weight: 900;
         margin-right: 1.5rem;
     }
+
+    .action-icon {
+        color: #adb5bd;
+        transition: all 0.2s ease-in-out;
+        display: inline-flex;
+        align-items: center; /* Centra el icono verticalmente */
+        justify-content: center; /* Centra el icono horizontalmente */
+        /* Reseteo de estilos para el <button> y el <a> */
+        background: transparent; /* Quita el fondo del botón */
+        border: none; /* Quita el borde feo del botón */
+        padding: 0; /* Iguala los espacios */
+        cursor: pointer; /* Fuerza la "manito" en el botón */
+        text-decoration: none; /* Evita que el enlace se subraye */
+        font-size: 1.25rem; /* Opcional: unifica el tamaño de los iconos */
+    }
+
+        .action-icon.edit:hover {
+            color: var(--forest-accent); /* Tu verde bosque */
+            transform: scale(1.15) translateY(-2px);
+        }
+
+        .action-icon.delete:hover {
+            color: #ff4b4b; /* Rojo para borrar */
+            transform: scale(1.15) translateY(-2px);
+        }
+
 
     @@media (max-width: 991px) {
         .overlap-content {
@@ -327,11 +353,11 @@
                                 {
                                     <div class="lesson-actions ms-auto d-flex gap-2">
                                         <a asp-action="Edit" asp-controller="Lecciones" asp-route-id="@leccion.LeccionID"
-                                           class="btn btn-sm btn-outline-primary" style="border-radius: 10px;" title="Editar Lección">
+                                           class="action-icon edit" title="Editar Lección">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 
-                                        <button type="button" class="btn btn-sm btn-outline-danger" style="border-radius: 10px;" title="Eliminar Lección"
+                                        <button type="button" class="action-icon delete" title="Eliminar Lección"
                                                 onclick="confirmarEliminarLeccion(@leccion.LeccionID, '@leccion.Titulo', @leccion.CursoID)">
                                             <i class="bi bi-trash3-fill"></i>
                                         </button>

@@ -29,11 +29,13 @@ namespace ProyectoDuolingoC_.Controllers
             return View();
         }
         [HttpPost]
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> Create(Leccion lec)
         {
             await this.repo.CreateLeccionAsync(lec);
             return RedirectToAction("Details", "Cursos", new { id = lec.CursoID});
         }
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> Eliminar(int id, int idCurso)
         {
             await this.repo.EliminarLeccionEnCascada(id);
@@ -43,6 +45,7 @@ namespace ProyectoDuolingoC_.Controllers
             return RedirectToAction("Details", "Cursos", new { id = idCurso });
         }
         [HttpGet]
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> Edit(int id)
         {
             Leccion leccion = await this.repo.VerContenido(id);

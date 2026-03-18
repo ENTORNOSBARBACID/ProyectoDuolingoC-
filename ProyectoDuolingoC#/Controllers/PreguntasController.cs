@@ -157,6 +157,7 @@ namespace ProyectoDuolingoC_.Controllers
             ViewData["LECCIONID"] = idLec;
             return View(preg);
         }
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> Update(int id)
         {
             Pregunta preg = await this.repo.VerPreguntaPorId(id);
@@ -167,6 +168,7 @@ namespace ProyectoDuolingoC_.Controllers
             }
             return View(preg);
         }
+        [Authorize(Policy = "SOLOADMIN")]
         [HttpPost]
         public async Task<IActionResult> Update(Pregunta preguntaModificada)
         {
@@ -186,6 +188,7 @@ namespace ProyectoDuolingoC_.Controllers
             };
             return View(nuevaPregunta);
         }
+        [Authorize(Policy = "SOLOADMIN")]
         [HttpPost]
         public async Task<IActionResult> Create(Pregunta pregunta)
         {
@@ -204,6 +207,8 @@ namespace ProyectoDuolingoC_.Controllers
             return RedirectToAction("VerPreguntas", new { idLec = pregunta.LeccionID });
         }
         [HttpGet]
+        [Authorize(Policy = "SOLOADMIN")]
+
         public async Task<IActionResult> VerOpciones(int id) 
         {
             List<OpcionRespuesta> opciones = await this.repo.VerOpciones(id);
@@ -214,6 +219,8 @@ namespace ProyectoDuolingoC_.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "SOLOADMIN")]
+
         public async Task<IActionResult> AddOption(int PreguntaID, string TextoOpcion)
         {
             if (!string.IsNullOrWhiteSpace(TextoOpcion))
@@ -224,10 +231,23 @@ namespace ProyectoDuolingoC_.Controllers
             return RedirectToAction("VerOpciones", new { id = PreguntaID });
         }
 
+        [Authorize(Policy = "SOLOADMIN")]
         [HttpPost]
         public async Task<IActionResult> DeleteOption(int OpcionID, int PreguntaID)
         {
-            await this.repo.EliminarOpcion(OpcionID);
+            Pregunta pregunta = await this.repo.VerPreguntaPorId(PreguntaID);
+
+            if (pregunta.OpcionCorrectaID == OpcionID)
+            {
+                TempData["MENSAJE"] = "No puedes eliminar la opción correcta. Primero marca otra como correcta.";
+                TempData["TIPO_MENSAJE"] = "error";
+            }
+            else
+            {
+                await this.repo.EliminarOpcion(OpcionID);
+                TempData["MENSAJE"] = "Opción eliminada correctamente.";
+                TempData["TIPO_MENSAJE"] = "success";
+            }
             return RedirectToAction("VerOpciones", new { id = PreguntaID });
         }
 

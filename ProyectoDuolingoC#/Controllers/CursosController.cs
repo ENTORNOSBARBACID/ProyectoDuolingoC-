@@ -112,6 +112,9 @@ namespace ProyectoDuolingoC_.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await this.repo.Delete(id);
+            TempData["Titulo"] = "¡Eliminado!";
+            TempData["Mensaje"] = "Has eliminado el curso y todas sus lecciones.";
+            TempData["Icono"] = "success";
             return RedirectToAction("Index", "Home");
         }
         public async Task<IActionResult> Update(int id)
@@ -186,12 +189,13 @@ namespace ProyectoDuolingoC_.Controllers
                     return RedirectToAction("MisCursos", "Cursos");
             }
             }
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> VerEstudiantes()
         {
             List<EstudianteAdminVM> listaEstudiantes = await this.repo.VerEstudiantes();
             return View(listaEstudiantes);
         }
-
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> ExpulsarEstudiante(int idUsuario, int idCurso)
         {
             await this.repo.ExpulsarEstudianteCurso(idUsuario, idCurso);

@@ -262,19 +262,22 @@
                 item.style.display = text.includes(filter) ? "block" : "none";
             });
         });
-    
-        function confirmarBorrado(urlDelete) {
+                function confirmarBorrado(urlDelete) {
             Swal.fire({
                 title: '¿Estás completamente seguro?',
                 text: "¡Peligro! Se borrarán todas las lecciones, preguntas y el progreso de los alumnos. Esta acción NO se puede deshacer.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#e63946', // Un rojo intenso para la acción destructiva
-                cancelButtonColor: '#1a4332',  // Tu verde bosque para el botón seguro
+                confirmButtonColor: '#e63946',
+                cancelButtonColor: '#1a4332',
                 confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, eliminar todo',
                 cancelButtonText: 'Cancelar',
                 customClass: {
                     popup: 'rounded-4'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = urlDelete;
                 }
             });
         }

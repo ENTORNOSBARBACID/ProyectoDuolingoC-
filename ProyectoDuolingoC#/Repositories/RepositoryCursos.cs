@@ -22,56 +22,57 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace ProyectoDuolingoC_.Repositories
 {
     #region procedures
-    //    CREATE PROCEDURE SP_EliminarCursoEnCascada
+    //    alter PROCEDURE SP_EliminarCursoEnCascada
     //    @CursoID INT
     //AS
     //BEGIN
     //    SET NOCOUNT ON;
 
     //    BEGIN TRY
-    //        --Iniciamos la transacción: Todo lo que pase a partir de aquí es "temporal" hasta el COMMIT
     //        BEGIN TRANSACTION;
 
-    //        -- 1. Borramos el progreso de los usuarios(depende de las lecciones del curso)
+    //        -- 1. Borramos el progreso de los usuarios
     //        DELETE FROM dbo.ProgresoUsuario
     //        WHERE LeccionID IN(SELECT LeccionID FROM dbo.Lecciones WHERE CursoID = @CursoID);
 
-    //        -- 2. Borramos las opciones de respuesta(dependen de las preguntas, que dependen de las lecciones)
+    //        -- 2. ¡EL CAMBIO CLAVE! 
+    //        -- Primero: Ponemos a NULL el ID de la opción correcta en la tabla Preguntas
+    //        -- Esto rompe el vínculo que causaba el error de FK en el pantallazo anterior.
+    //        UPDATE dbo.Preguntas
+    //        SET OpcionCorrectaID = NULL
+    //        WHERE LeccionID IN (SELECT LeccionID FROM dbo.Lecciones WHERE CursoID = @CursoID);
+
+    //        -- Segundo: Ahora sí podemos borrar las opciones de respuesta sin conflictos
     //        DELETE FROM dbo.OpcionesRespuesta
     //        WHERE PreguntaID IN(
     //            SELECT PreguntaID FROM dbo.Preguntas
     //            WHERE LeccionID IN (SELECT LeccionID FROM dbo.Lecciones WHERE CursoID = @CursoID)
     //        );
 
-    //        -- 3. Borramos las preguntas(dependen de las lecciones)
+    //        -- 3. Borramos las preguntas
     //        DELETE FROM dbo.Preguntas
-    //        WHERE LeccionID IN(SELECT LeccionID FROM dbo.Lecciones WHERE CursoID = @CursoID);
+    //        WHERE LeccionID IN (SELECT LeccionID FROM dbo.Lecciones WHERE CursoID = @CursoID);
 
-    //        -- 4. Borramos las lecciones en sí
+    //        -- 4. Borramos las lecciones
     //        DELETE FROM dbo.Lecciones
     //        WHERE CursoID = @CursoID;
 
-    //        -- 5. Borramos a los usuarios que estaban apuntados al curso
+    //        -- 5. Borramos la relación de usuarios inscritos
     //        DELETE FROM dbo.CursosUsuario
     //        WHERE CursoID = @CursoID;
 
-    //        -- 6. Finalmente, como ya no tiene "hijos" que lo aten, borramos el curso
+    //        -- 6. Finalmente, borramos el curso
     //        DELETE FROM dbo.Cursos
     //        WHERE CursoID = @CursoID;
 
-    //        -- Si el código sobrevive hasta esta línea sin explotar, consolidamos los cambios
-    //        COMMIT TRANSACTION;
+    //    COMMIT TRANSACTION;
     //    END TRY
     //    BEGIN CATCH
-    //        -- ¡ALERTA! Algo falló(ej: se cayó el servidor a mitad o hubo un error de FK)
-
-    //        -- Si hay una transacción a medias, la DESHACEMOS por completo
     //        IF @@TRANCOUNT > 0
     //        BEGIN
     //            ROLLBACK TRANSACTION;
     //        END
 
-    //        -- Le lanzamos el error de vuelta a C# para que sepa exactamente qué pasó
     //        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
     //    DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
     //    DECLARE @ErrorState INT = ERROR_STATE();
@@ -79,7 +80,6 @@ namespace ProyectoDuolingoC_.Repositories
     //    RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
     //    END CATCH
     //END
-
 
 
     //    ALTER PROCEDURE SP_ObtenerProgresoMisCursos
