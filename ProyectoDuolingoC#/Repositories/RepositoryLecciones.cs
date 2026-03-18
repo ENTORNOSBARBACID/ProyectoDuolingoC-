@@ -1,11 +1,16 @@
 ﻿using Humanizer;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using NuGet.Protocol.Plugins;
 using ProyectoDuolingoC_.Data;
 using ProyectoDuolingoC_.Models;
+using System;
+using System.Collections.Generic;
+using System.Runtime.Intrinsics.Arm;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProyectoDuolingoC_.Repositories
 {
@@ -16,61 +21,67 @@ namespace ProyectoDuolingoC_.Repositories
     //BEGIN
     //    SET NOCOUNT ON;
 
-    //    -- 1. Capturamos a qué curso pertenece esta lección ANTES de borrarla
+    //    -- 1. Capturamos el CursoID antes de borrar para el reordenamiento posterior
     //    DECLARE @CursoID INT;
     //    SELECT @CursoID = CursoID FROM dbo.Lecciones WHERE LeccionID = @LeccionID;
 
     //    BEGIN TRY
-    //        BEGIN TRAN;
+    //        BEGIN TRANSACTION;
 
-    //        -- 2. Borramos Opciones(Nietos)
+    //        -- 2. DESVINCULAR OPCIÓN CORRECTA(Obligatorio para evitar error de FK)
+    //        -- Si la pregunta tiene un OpcionCorrectaID, lo ponemos a NULL
+    //        -- Así la tabla OpcionesRespuesta queda libre para ser borrada
+    //        UPDATE dbo.Preguntas
+    //        SET OpcionCorrectaID = NULL
+    //        WHERE LeccionID = @LeccionID AND OpcionCorrectaID IS NOT NULL;
+
+    //        -- 3. BORRAR FÍSICAMENTE LAS OPCIONES(Nietos)
+    //        -- Ahora que nada las apunta desde Preguntas, las eliminamos
     //        DELETE FROM dbo.OpcionesRespuesta
     //        WHERE PreguntaID IN(
     //            SELECT PreguntaID FROM dbo.Preguntas WHERE LeccionID = @LeccionID
     //        );
 
-    //        -- 3. Borramos Preguntas(Hijos)
+    //        -- 4. BORRAR PREGUNTAS(Hijos)
     //        DELETE FROM dbo.Preguntas
     //        WHERE LeccionID = @LeccionID;
 
-    //        -- 4. Borramos Progreso(Hijos)
+    //        -- 5. BORRAR PROGRESO(Hijos)
     //        DELETE FROM dbo.ProgresoUsuario
     //        WHERE LeccionID = @LeccionID;
 
-    //        -- 5. Borramos la Lección(Padre)
+    //        -- 6. BORRAR LA LECCIÓN(Padre)
     //        DELETE FROM dbo.Lecciones
     //        WHERE LeccionID = @LeccionID;
 
-    //        -- 6. LA MAGIA DEL REORDENAMIENTO
-    //        --Solo lo hacemos si encontramos el curso válido
+    //        -- 7. REORDENAMIENTO DE LECCIONES
     //        IF @CursoID IS NOT NULL
     //        BEGIN
-    //            -- Usamos una CTE(Tabla Temporal en Memoria) para enumerar las lecciones que quedan 1, 2, 3...
     //            WITH LeccionesReordenadas AS(
     //                SELECT
     //                    LeccionID,
-    //                    Orden,
-    //                    -- ROW_NUMBER genera una secuencia perfecta (1,2,3...) basándose en el orden que ya tenían
     //                    ROW_NUMBER() OVER(ORDER BY Orden ASC, LeccionID ASC) AS NuevoOrden
     //                FROM dbo.Lecciones
     //                WHERE CursoID = @CursoID
     //            )
-    //            -- Actualizamos la tabla real pisando el Orden viejo con el NuevoOrden perfecto
-    //            UPDATE LeccionesReordenadas
-    //            SET Orden = NuevoOrden
-    //            -- Pequeña optimización: solo actualizamos si el número realmente ha cambiado
-    //            WHERE Orden<> NuevoOrden;
+    //            UPDATE L
+    //            SET L.Orden = LR.NuevoOrden
+    //            FROM dbo.Lecciones L
+    //            JOIN LeccionesReordenadas LR ON L.LeccionID = LR.LeccionID
+    //            WHERE L.Orden<> LR.NuevoOrden;
     //    END
 
-    //        -- Confirmamos los cambios
-    //        COMMIT TRAN;
+    //    COMMIT TRANSACTION;
     //    END TRY
     //    BEGIN CATCH
-    //        --Si falla algo, marcha atrás
     //        IF @@TRANCOUNT > 0
-    //            ROLLBACK TRAN;
+    //            ROLLBACK TRANSACTION;
 
-    //    THROW;
+    //        -- Lanzamos el error para que C# se entere de qué ha pasado
+    //        DECLARE @Msg NVARCHAR(4000) = ERROR_MESSAGE();
+    //    DECLARE @Sev INT = ERROR_SEVERITY();
+    //    DECLARE @St INT = ERROR_STATE();
+    //    RAISERROR(@Msg, @Sev, @St);
     //    END CATCH
     //END
     //GO
