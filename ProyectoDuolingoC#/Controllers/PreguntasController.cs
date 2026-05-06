@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProyectoDuolingoC_.Models;
+using NuggetLanguoABF.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Security.Claims;
 
@@ -189,16 +189,17 @@ namespace ProyectoDuolingoC_.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Pregunta pregunta)
         {
-
             if (pregunta.TipoPregunta == "OpcionMultiple")
             {
                 pregunta.RespuestaCorrecta = "PorDefinir";
             }
 
-            await this.repo.CrearPregunta(pregunta);
+            Pregunta preguntaCreada = await this.repo.CrearPregunta(pregunta);
 
-            if(pregunta.TipoPregunta == "OpcionMultiple") {
-                return RedirectToAction("VerOpciones", new { id = pregunta.PreguntaID });
+            if (preguntaCreada != null && pregunta.TipoPregunta == "OpcionMultiple")
+            {
+                
+                return RedirectToAction("VerOpciones", new { id = preguntaCreada.PreguntaID });
             }
 
             return RedirectToAction("VerPreguntas", new { idLec = pregunta.LeccionID });

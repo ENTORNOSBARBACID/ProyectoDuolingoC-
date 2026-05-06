@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProyectoDuolingoC_.Models;
+using NuggetLanguoABF.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -11,7 +11,7 @@ namespace ProyectoDuolingoC_.Controllers
     {
         RepositoryCursos repo;
         RepositoryLecciones repoLec;
-        public CursosController(RepositoryCursos repo, RepositoryLecciones repoLec) 
+        public CursosController(RepositoryCursos repo, RepositoryLecciones repoLec)
         {
             this.repo = repo;
             this.repoLec = repoLec;
@@ -28,10 +28,11 @@ namespace ProyectoDuolingoC_.Controllers
             List<Leccion> lec = await this.repoLec.LoadLecciones(id);
             ViewData["LECCIONES"] = lec;
 
-            int idUsu = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string userIdString = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (idUsu != null)
+            if (userIdString != null)
             {
+                int idUsu = int.Parse(userIdString);
                 CursosUsuario cursosUsuario = await this.repo.VerCursousuarioAsync(id, idUsu);
                 List<ProgresoUsuario> progreso = await this.repoLec.VerProgresoUsuarioListAsync(idUsu, id);
                 if(progreso != null && progreso.Any())
@@ -91,7 +92,7 @@ namespace ProyectoDuolingoC_.Controllers
             return View();
         }
         [HttpPost]
-        [Authorize(Policy = "SOLOADMIN")] // Mantenemos tu seguridad a tope
+        [Authorize(Policy = "SOLOADMIN")]
         public async Task<IActionResult> Create(Curso curso, IFormFile archivoImagen)
         {
             if (archivoImagen != null && archivoImagen.Length > 0)

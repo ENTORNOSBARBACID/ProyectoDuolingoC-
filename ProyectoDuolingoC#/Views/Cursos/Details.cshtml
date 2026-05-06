@@ -1,4 +1,4 @@
-﻿@model ProyectoDuolingoC_.Models.Curso
+﻿@model NuggetLanguoABF.Models.Curso
 
 @{
     ViewData["Title"] = "Curso de " + Model.Titulo;
@@ -356,7 +356,7 @@
                 {
                     <p class="text-muted mb-4"><i class="bi bi-info-circle me-2"></i>Aún no hay lecciones creadas para este curso.</p>
                 }
-                @if (Context.User.FindFirst(ClaimTypes.Role).Value == "2")
+                @if (User.IsInRole("2"))
                 {
                     
                     <a asp-action="Create" asp-controller="Lecciones" asp-route-id="@Model.CursoID" class="lesson-strip-add mt-4">

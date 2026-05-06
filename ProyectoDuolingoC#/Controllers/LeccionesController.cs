@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProyectoDuolingoC_.Models;
+using NuggetLanguoABF.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Threading.Tasks;
 

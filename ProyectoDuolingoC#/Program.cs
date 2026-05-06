@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using ProyectoDuolingoC_.Data;
 using ProyectoDuolingoC_.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,12 +36,11 @@ builder.Services.AddAuthentication
     );
 
 
-string connectionString = builder.Configuration.GetConnectionString("SqlProyecto");
-builder.Services.AddTransient<RepositoryLogIn>();
-builder.Services.AddTransient<RepositoryCursos>();
-builder.Services.AddTransient<RepositoryLecciones>();
-builder.Services.AddTransient<RepositoryPreguntas>();
-builder.Services.AddDbContext<ProyectoContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddHttpClient<RepositoryLogIn>();
+builder.Services.AddHttpClient<RepositoryCursos>();
+builder.Services.AddHttpClient<RepositoryLecciones>();
+builder.Services.AddHttpClient<RepositoryPreguntas>();
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

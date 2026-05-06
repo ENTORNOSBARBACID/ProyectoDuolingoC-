@@ -1,143 +1,130 @@
-﻿using Humanizer;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
-using ProyectoDuolingoC_.Data;
-using ProyectoDuolingoC_.Models;
+﻿using Azure;
+using NuggetLanguoABF.Models;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace ProyectoDuolingoC_.Repositories
 {
-    #region Procedures
-    //    CREATE PROCEDURE SP_EliminarPregunta
-    //    @PreguntaID INT
-    //AS
-    //BEGIN
-    //    SET NOCOUNT ON;
-    
-    //    -- 1. Primero, averiguamos si la pregunta tiene una "OpcionCorrectaID" asociada
-    //    DECLARE @OpcionCorrecta INT;
-    //    SELECT @OpcionCorrecta = OpcionCorrectaID
-    //    FROM dbo.Preguntas
-    //    WHERE PreguntaID = @PreguntaID;
-
-    //    BEGIN TRY
-    //        BEGIN TRAN;
-
-    //        -- 2. SI TIENE OPCIONES(No es nulo), procedemos a limpiarlas primero
-    //        IF @OpcionCorrecta IS NOT NULL
-    //        BEGIN
-    //            --Rompemos la atadura(Referencia Circular) para que nos deje borrar
-    //            UPDATE dbo.Preguntas
-    //            SET OpcionCorrectaID = NULL
-    //            WHERE PreguntaID = @PreguntaID;
-
-    //            -- Borramos todas las respuestas de la tabla OpcionesRespuesta atadas a esta pregunta
-    //            DELETE FROM dbo.OpcionesRespuesta
-    //            WHERE PreguntaID = @PreguntaID;
-    //    END
-
-    //        -- 3. Finalmente(tenga o no tenga opciones previas), borramos la Pregunta
-    //        DELETE FROM dbo.Preguntas
-    //        WHERE PreguntaID = @PreguntaID;
-
-    //        -- Si todo es correcto, guardamos los cambios en firme
-    //        COMMIT TRAN;
-    //    END TRY
-    //    BEGIN CATCH
-    //        --Si hay error, marcha atrás
-    //        IF @@TRANCOUNT > 0
-    //            ROLLBACK TRAN;
-
-    //    THROW;
-    //    END CATCH
-    //END
-    //GO
-    #endregion
     public class RepositoryPreguntas
     {
-        private ProyectoContext context;
-        public RepositoryPreguntas(ProyectoContext context)
+        private HttpClient client;
+        private string urlApi;
+
+        public RepositoryPreguntas(HttpClient client, IConfiguration configuration)
         {
-            this.context = context;
+            this.client = client;
+            // Leemos la URL base desde tu appsettings.json
+            this.urlApi = configuration.GetValue<string>("ApisUrl:ApiProyecto");
+
+            this.client.BaseAddress = new Uri(this.urlApi);
+            this.client.DefaultRequestHeaders.Clear();
+            this.client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
         public async Task<List<Pregunta>> VerPregunta(int idLeccion)
         {
-            var pregunta = await context.Pregunta
-                .Where(l => l.LeccionID == idLeccion)
-                .ToListAsync();
-            return pregunta;
+            string request = $"api/Preguntas/VerPregunta/{idLeccion}";
+            var response = await this.client.GetAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<Pregunta>>();
+            }
+            return new List<Pregunta>();
         }
+
         public async Task<List<OpcionRespuesta>> VerOpciones(int idPregunta)
         {
-            var opciones = await context.OpcionRespuesta
-                .Where(o => o.PreguntaID == idPregunta)
-                .ToListAsync();
-            return opciones;
+            string request = $"api/Preguntas/VerOpciones/{idPregunta}";
+            var response = await this.client.GetAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<OpcionRespuesta>>();
+            }
+            return new List<OpcionRespuesta>();
         }
+
         public async Task<Pregunta> VerPreguntaPorId(int idPregunta)
         {
-            var pregunta = await context.Pregunta
-                .Where(p => p.PreguntaID == idPregunta)
-                .FirstOrDefaultAsync();
-            return pregunta;
+            string request = $"api/Preguntas/VerPreguntaPorId/{idPregunta}";
+            var response = await this.client.GetAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<Pregunta>();
+            }
+            return null;
         }
 
         public async Task<List<Pregunta>> VerPreguntasPorLeccion(int leccionId)
         {
-            var preguntas = await context.Pregunta
-                .Where(p => p.LeccionID == leccionId)
-                .ToListAsync();
-            return preguntas;
+            string request = $"api/Preguntas/VerPreguntasPorLeccion/{leccionId}";
+            var response = await this.client.GetAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<List<Pregunta>>();
+            }
+            return new List<Pregunta>();
         }
+
         public async Task ActualizarPregunta(Pregunta pregunta)
         {
-            this.context.Pregunta.Update(pregunta);
-            await this.context.SaveChangesAsync();
+            string request = "api/Preguntas/ActualizarPregunta";
+            await this.client.PutAsJsonAsync(request, pregunta);
         }
-        public async Task CrearPregunta(Pregunta pregunta)
+
+        public async Task<Pregunta> CrearPregunta(Pregunta pregunta)
         {
-            await this.context.Pregunta.AddAsync(pregunta);
-            await this.context.SaveChangesAsync();
-        }
-        public async Task InsertarOpcion(int id, string texto)
-        {
-            OpcionRespuesta nuevaOpcion = new OpcionRespuesta
+            string request = "api/Preguntas/CreatePregunta";
+            var response = await this.client.PostAsJsonAsync(request, pregunta);
+            if (response.IsSuccessStatusCode)
             {
-                PreguntaID = id,
-                TextoOpcion = texto
-            };
-            await this.context.OpcionRespuesta.AddAsync(nuevaOpcion);
-            await this.context.SaveChangesAsync();
-        }
-        public async Task EliminarOpcion(int id)
-        {
-            OpcionRespuesta o = await context.OpcionRespuesta
-                .Where(op => op.OpcionID == id)
-                .FirstOrDefaultAsync();
-            if (o != null)
+                return await response.Content.ReadFromJsonAsync<Pregunta>();
+            }
+            else
             {
-                this.context.OpcionRespuesta.Remove(o);
-                await this.context.SaveChangesAsync();
+                string error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la API al crear pregunta: {response.StatusCode}. Detalle: {error}");
             }
         }
+
+        public async Task InsertarOpcion(int id, string texto)
+        {
+            string request = "api/Preguntas/InsertarOpcion";
+
+            // Empaquetamos los datos para enviarlos de forma segura en el body
+            InsertarOpcionDTO model = new InsertarOpcionDTO
+            {
+                IdPregunta = id,
+                TextoOpcion = texto
+            };
+
+            await this.client.PostAsJsonAsync(request, model);
+        }
+
+        public async Task EliminarOpcion(int id)
+        {
+            string request = $"api/Preguntas/EliminarOpcion/{id}";
+            await this.client.DeleteAsync(request);
+        }
+
         public async Task EliminarPregunta(int id)
         {
-            string sql = "EXEC SP_EliminarPregunta @preguntaID";
-            SqlParameter pamId = new SqlParameter("@preguntaID", id);
-            await this.context.Database.ExecuteSqlRawAsync(sql, pamId);
+            string request = $"api/Preguntas/EliminarPregunta/{id}";
+            await this.client.DeleteAsync(request);
         }
 
         public async Task SumarPuntos(int puntos, int idUsuario)
         {
-            var usuario = await this.context.Usuario
-                .FirstOrDefaultAsync(u => u.UsuarioID == idUsuario);
-
-            if (usuario != null)
-            {
-                usuario.ExperienciaTotal = (usuario.ExperienciaTotal) + puntos;
-                await this.context.SaveChangesAsync();
-            }
+            // Ojo al orden de los parámetros en la ruta para que coincida con tu controlador: {idUsuario}/{puntos}
+            string request = $"api/Preguntas/SumarPuntos/{idUsuario}/{puntos}";
+            // Enviamos un PUT vacío porque la información ya va en la URL
+            await this.client.PutAsync(request, null);
         }
+    }
+
+    // --- DTO para el envío de opciones ---
+    public class InsertarOpcionDTO
+    {
+        public int IdPregunta { get; set; }
+        public string TextoOpcion { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using ProyectoDuolingoC_.Models;
+using NuggetLanguoABF.Models;
 using ProyectoDuolingoC_.Repositories;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -51,23 +51,23 @@ namespace ProyectoDuolingoC_.Controllers
         }
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetFotoPerfil()
+        public IActionResult GetFotoPerfil()
         {
-            // Sacamos el ID del usuario de su sesión segura
-            int idUsu = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            // 1. Recuperamos el string Base64 de la Session (no de User)
+            string fotoBase64 = HttpContext.Session.GetString("FOTO");
 
-            // Buscamos al usuario en la base de datos
-            Usuario user = await this.repo.FindUsuarioByIDAsync(idUsu);
-
-            // Si tiene foto, la devolvemos como archivo de imagen
-            if (user != null && user.Imagen != null && user.Imagen.Length > 0)
+            if (string.IsNullOrEmpty(fotoBase64))
             {
-                return File(user.Imagen, "image/jpeg");
+                // Si no hay foto, devolvemos un 404
+                return NotFound();
             }
 
-            // Si no tiene foto, podemos devolver un avatar por defecto transparente de 1x1 píxel 
-            // o simplemente un null/NotFound para que el HTML muestre el icono de Bootstrap
-            return NotFound();
+            // 2. Convertimos el string Base64 de nuevo a un array de bytes
+            // Esto es necesario porque el método File() necesita bytes para "dibujar" la imagen
+            byte[] imagenBytes = Convert.FromBase64String(fotoBase64);
+
+            // 3. Devolvemos el archivo indicando el tipo de contenido
+            return File(imagenBytes, "image/jpeg");
         }
         public async Task<IActionResult> LogIn()
         {
@@ -76,34 +76,45 @@ namespace ProyectoDuolingoC_.Controllers
         [HttpPost]
         public async Task<IActionResult> LogIn(string email, string pass)
         {
-            Usuario user = await this.repo.LogInUserAsync(email, pass);
+            LoginResponseDTO response = await this.repo.LogInUserAsync(email, pass);
 
-            if (user == null)
+            if (response == null)
             {
                 ViewData["MENSAJE"] = "Credenciales no válidas";
                 return View();
             }
             else
             {
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(response.Token);
+
                 ClaimsIdentity identity = new ClaimsIdentity(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     ClaimTypes.Name,
                     ClaimTypes.Role);
+                Usuario Usuario = await this.repo.GetPerfilAsync(response.Token);
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, Usuario.UsuarioID.ToString()));
+                identity.AddClaim(new Claim("JWT", response.Token));
+                identity.AddClaim(new Claim(ClaimTypes.Role, Usuario.Rol.ToString()));
+                identity.AddClaim(new Claim(ClaimTypes.Name, Usuario.NombreUsuario));
 
-                Claim claimId = new Claim(ClaimTypes.NameIdentifier, user.UsuarioID.ToString());
-                Claim claimName = new Claim(ClaimTypes.Name, user.NombreUsuario);
-
-                Claim claimRole = new Claim(ClaimTypes.Role, user.Rol.ToString());
-
-                identity.AddClaim(claimId);
-                identity.AddClaim(claimName);
-                identity.AddClaim(claimRole);
+                if (Usuario.Imagen != null)
+                {
+                    string fotoBase64 = Convert.ToBase64String(Usuario.Imagen);
+                    HttpContext.Session.SetString("FOTO", fotoBase64);
+                }
 
                 ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-
+                
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                HttpContext.Session.SetInt32("ID", user.UsuarioID);
+                HttpContext.Session.SetString("TOKEN", response.Token);
+
+                if (response.ImagenPerfil != null)
+                {
+                    string base64Image = Convert.ToBase64String(response.ImagenPerfil);
+                    HttpContext.Session.SetString("FOTO", base64Image);
+                }
 
                 return RedirectToAction("Index", "Home");
             }

@@ -1,4 +1,4 @@
-﻿@model ProyectoDuolingoC_.Models.Pregunta
+﻿@model NuggetLanguoABF.Models.Pregunta
 
 @{
     ViewData["Title"] = "Reto en curso";
@@ -6,7 +6,7 @@
     int progreso = ViewData["PROGRESO_PORCENTAJE"] != null ? (int)ViewData["PROGRESO_PORCENTAJE"] : 0;
 
     // Recuperamos la lista de opciones de la base de datos
-    var opciones = ViewData["OPCIONES"] as List<ProyectoDuolingoC_.Models.OpcionRespuesta>;
+    var opciones = ViewData["OPCIONES"] as List<NuggetLanguoABF.Models.OpcionRespuesta>;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
